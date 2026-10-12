@@ -1,7 +1,7 @@
 const mysql = require('mysql2');
 require('dotenv').config();
 
-// Placeholder de conexión (Preparado para AWS RDS / MySQL)
+// Pool de conexión a MySQL (Preparado para la instancia local o AWS RDS)
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
@@ -13,11 +13,10 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// Verificación flexible para desarrollo local sin BD activa
+// Verificación de conexión
 pool.getConnection((err, connection) => {
   if (err) {
-    console.warn('⚠️ Advertencia: No hay base de datos activa (Modo Mockup/Placeholder AWS activo).');
-    console.warn('ℹ️ El servidor continuará operando para evaluar las interfaces y flujos.');
+    console.error('❌ Error de conexión a la base de datos MySQL:', err.message);
     return;
   }
   if (connection) {
