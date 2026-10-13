@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel SGR - Municipalidad de La Serena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .bg-muni-red { background-color: #C41230; }
+        .text-muni-red { color: #C41230; }
+        .border-muni-red { border-color: #C41230; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Cabecera Institucional Permanente -->
+    <header class="bg-[#C41230] text-white shadow-md border-b-4 border-amber-500">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <!-- Logo oficial -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-white px-3 py-1.5 rounded-lg shadow-sm flex items-center">
+                    <img src="/assets/horizontal-color.png" alt="Municipalidad de La Serena" class="h-8 w-auto object-contain">
+                </div>
+            </div>
+
+            <!-- Delegación Actual y Selector -->
+            <div class="flex items-center space-x-3 bg-red-900/40 px-3 py-1.5 rounded-lg border border-red-400/30">
+                <i class="fa-solid fa-building-columns text-amber-300"></i>
+                <div>
+                    <p class="text-[10px] text-red-200 uppercase font-semibold">Delegación Activa</p>
+                    <div class="flex items-center space-x-2">
+                        <span id="label-delegacion" class="text-xs font-bold">DEL-01: Oficina Central La Serena</span>
+                        <select id="selector-delegacion" onchange="cambiarDelegacionActiva(this.value)" class="hidden text-xs bg-slate-900 text-white px-2 py-0.5 rounded outline-none border border-red-400">
+                            <!-- Inyectado si tiene múltiples delegaciones -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usuario y Rol -->
+            <div class="flex items-center space-x-3">
+                <div class="text-right">
+                    <p id="nav-username" class="text-xs font-bold">Nombre Usuario</p>
+                    <p id="nav-rol" class="text-[10px] text-red-200 uppercase font-semibold">Rol</p>
+                </div>
+                <button onclick="cerrarSesion()" class="bg-slate-900 hover:bg-slate-950 text-white px-3 py-1.5 rounded text-xs transition">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Salir
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+
+        <!-- Navegación de Módulos (Filtrada por Rol) -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-red-100 flex flex-wrap gap-2 items-center">
+            <div id="menu-modulos" class="flex flex-wrap gap-2">
+                <!-- Inyectado dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Módulo Activo -->
+        <div class="bg-white rounded-xl shadow-sm border border-red-100 p-6 space-y-4">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <h3 id="modulo-titulo" class="text-xl font-bold text-slate-900 border-l-4 border-[#C41230] pl-3">Gestión</h3>
+                <div class="flex gap-2">
+                    <button onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-medium"><i class="fa-solid fa-file-excel mr-1"></i> Exportar</button>
+                    <button onclick="abrirModalCrear()" class="bg-[#C41230] hover:bg-red-800 text-white px-3 py-2 rounded-lg text-sm font-medium"><i class="fa-solid fa-plus mr-1"></i> Nuevo</button>
+                </div>
+            </div>
+
+            <!-- Búsqueda y Filtros -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border">
+                <input type="text" id="filtro-busqueda" oninput="aplicarFiltros()" placeholder="Buscar (insensible a mayúsculas)..." class="p-2 border rounded-lg text-sm w-full">
+                <select id="filtro-estado" onchange="aplicarFiltros()" class="p-2 border rounded-lg text-sm w-full">
+                    <option value="">-- Todos los Estados --</option>
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+                <div class="text-right text-xs text-slate-500 self-center font-semibold" id="total-resultados">Total: 0</div>
+            </div>
+
+            <!-- Tabla -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="tabla-datos">
+                    <thead>
+                        <tr class="bg-red-50 text-red-900 uppercase text-xs font-semibold">
+                            <th class="p-3">ID / Código</th>
+                            <th class="p-3">Nombre / Detalle</th>
+                            <th class="p-3">Estado</th>
+                            <th class="p-3 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-datos" class="divide-y divide-slate-100 text-sm"></tbody>
+                </table>
+            </div>
+
+            <!-- Paginador -->
+            <div class="flex justify-between items-center pt-3 border-t text-sm">
+                <button id="btn-prev" onclick="cambiarPagina(-1)" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200">Anterior</button>
+                <span id="info-pagina" class="text-xs text-slate-600">Página 1 de 1</span>
+                <button id="btn-next" onclick="cambiarPagina(1)" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200">Siguiente</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Formulario -->
+    <div id="modal-crear" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 border-t-4 border-[#C41230]">
+            <h3 id="modal-titulo" class="text-lg font-bold text-slate-900 mb-4">Registro</h3>
+            <form id="form-crear" onsubmit="guardarRegistro(event)" class="space-y-3">
+                <input type="hidden" id="edit-id">
+                <div id="modal-inputs" class="space-y-3"></div>
+                <div class="flex justify-end space-x-2 pt-3 border-t">
+                    <button type="button" onclick="cerrarModal()" class="px-4 py-2 bg-slate-100 rounded-lg text-sm">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-[#C41230] text-white rounded-lg text-sm">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let token = localStorage.getItem('sgr_token') || '';
+        let usuario = JSON.parse(localStorage.getItem('sgr_user') || '{}');
+        let moduloActual = 'atenciones';
+        let paginaActual = 1;
+        let busquedaActual = '';
+        let estadoActual = '';
+        const API_URL = 'http://localhost:3000/api';
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+            inicializarCabecera();
+            construirMenu();
+            cargarDatos();
+        });
+
+        function inicializarCabecera() {
+            document.getElementById('nav-username').innerText = usuario.nombre || 'Funcionario';
+            document.getElementById('nav-rol').innerText = usuario.rol || 'Funcionario';
+            document.getElementById('label-delegacion').innerText = `${usuario.delegacion || 'DEL-01'}: Oficina Central`;
+            
+            // Si el usuario tiene múltiples delegaciones, habilitar selector
+            if (usuario.delegaciones && usuario.delegaciones.length > 1) {
+                const sel = document.getElementById('selector-delegacion');
+                sel.classList.remove('hidden');
+                sel.innerHTML = usuario.delegaciones.map(d => `<option value="${d}">${d}</option>`).join('');
+            }
+        }
+
+        function cambiarDelegacionActiva(nuevaDel) {
+            usuario.delegacion = nuevaDel;
+            document.getElementById('label-delegacion').innerText = `${nuevaDel}: Delegación Seleccionada`;
+            Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: `Delegación cambiada a ${nuevaDel}`, showConfirmButton: false, timer: 1500 });
+        }
+
+        function construirMenu() {
+            const cont = document.getElementById('menu-modulos');
+            let modulos = ['atenciones'];
+            const rol = (usuario.rol || '').toLowerCase();
+
+            if (['superadministrador', 'coordinador'].includes(rol)) {
+                modulos = ['atenciones', 'delegaciones', 'roles', 'usuarios', 'items-metas', 'tipos-atencion', 'sub-atenciones'];
+            } else if (rol === 'delegado municipal') {
+                modulos = ['atenciones', 'delegaciones', 'usuarios'];
+            }
+
+            cont.innerHTML = modulos.map(m => `<button onclick="cambiarModulo('${m}')" class="nav-btn bg-red-50 text-red-900 hover:bg-red-100 px-3 py-2 rounded-lg text-sm font-medium transition">${m.toUpperCase()}</button>`).join('');
+        }
+
+        function cambiarModulo(mod) {
+            moduloActual = mod;
+            paginaActual = 1;
+            document.getElementById('modulo-titulo').innerText = `Gestión de ${mod.toUpperCase()}`;
+            cargarDatos();
+        }
+
+        function aplicarFiltros() {
+            busquedaActual = document.getElementById('filtro-busqueda').value;
+            estadoActual = document.getElementById('filtro-estado').value;
+            paginaActual = 1;
+            cargarDatos();
+        }
+
+        function cambiarPagina(delta) {
+            paginaActual += delta;
+            cargarDatos();
+        }
+
+        async function cargarDatos() {
+            try {
+                const res = await fetch(`${API_URL}/${moduloActual}?page=${paginaActual}&limit=5&search=${encodeURIComponent(busquedaActual)}&estado=${encodeURIComponent(estadoActual)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const json = await res.json();
+                const tbody = document.getElementById('tbody-datos');
+                tbody.innerHTML = '';
+
+                if (json.pagination) {
+                    document.getElementById('total-resultados').innerText = `Total: ${json.pagination.total}`;
+                    document.getElementById('info-pagina').innerText = `Pág ${json.pagination.page} de ${json.pagination.totalPages || 1}`;
+                }
+
+                if (json.data && json.data.length > 0) {
+                    json.data.forEach(item => {
+                        tbody.innerHTML += `
+                            <tr class="border-b hover:bg-red-50/40">
+                                <td class="p-3 font-semibold text-red-900">${item.codigo_atencion || item.codigo || item.rut || item.id}</td>
+                                <td class="p-3">${item.ciudadano || item.nombre || item.periodo || 'N/A'}</td>
+                                <td class="p-3">${item.estado || 'Activo'}</td>
+                                <td class="p-3 text-center">
+                                    <button onclick="abrirEditar(${item.id})" class="bg-amber-100 text-amber-700 p-1.5 rounded text-xs mr-1"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="eliminar(${item.id})" class="bg-red-100 text-red-700 p-1.5 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>`;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">No hay registros.</td></tr>`;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function eliminar(id) {
+            const confirm = await Swal.fire({ title: '¿Estás seguro?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#C41230' });
+            if (!confirm.isConfirmed) return;
+
+            const res = await fetch(`${API_URL}/${moduloActual}/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const json = await res.json();
+
+            // CORRECCIÓN CRÍTICA: Nunca mostrar éxito si la operación falla
+            if (!res.ok) {
+                return Swal.fire('No se pudo eliminar', json.message || 'Error en el servidor', 'error');
+            }
+
+            Swal.fire('Eliminado', json.message, 'success');
+            cargarDatos();
+        }
+
+        function abrirModalCrear() {
+            document.getElementById('edit-id').value = '';
+            document.getElementById('modal-titulo').innerText = 'Nuevo Registro';
+            document.getElementById('modal-inputs').innerHTML = `<div><label class="block text-xs font-semibold">Nombre / Ciudadano</label><input type="text" id="f-nombre" required class="w-full border p-2 rounded"></div>`;
+            document.getElementById('modal-crear').classList.remove('hidden');
+        }
+
+        async function guardarRegistro(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const bodyData = { nombre: document.getElementById('f-nombre').value, estado: 'Activo' };
+
+            const res = await fetch(`${API_URL}/${moduloActual}${id ? '/' + id : ''}`, {
+                method: id ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(bodyData)
+            });
+            const json = await res.json();
+
+            // Validación estricta anti-falsos éxitos
+            if (!res.ok) {
+                return Swal.fire('Error al guardar', json.message || 'No se pudo completar la operación', 'error');
+            }
+
+            document.getElementById('modal-crear').classList.add('hidden');
+            Swal.fire('¡Éxito!', json.message, 'success');
+            cargarDatos();
+        }
+
+        function cerrarModal() { document.getElementById('modal-crear').classList.add('hidden'); }
+        function cerrarSesion() { localStorage.clear(); window.location.href = 'index.html'; }
+        function exportarExcel() { window.location.href = `${API_URL}/${moduloActual}/export?token=${token}`; }
+    </script>
+</body>
+</html>
