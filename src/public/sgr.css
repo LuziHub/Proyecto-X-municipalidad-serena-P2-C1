@@ -1,0 +1,31 @@
+/* Colores tomados de los logos oficiales (rojo #DB0032, negro #1D1D1B). laserena.cl declara además #920000 como color de tema. */
+:root {
+  --muni-rojo: #DB0032;
+  --muni-rojo-claro: #DB0032;
+  --muni-acento: #F59E0B;
+  --muni-oscuro: #1D1D1B;
+}
+.bg-muni-red { background-color: var(--muni-rojo); }
+.bg-faro-login {
+  background: linear-gradient(rgba(15,23,42,.65), rgba(15,23,42,.65)), url('/assets/faro%20login.jpg');
+  background-size: cover; background-position: center; background-attachment: fixed;
+}
+:focus-visible { outline: 3px solid var(--muni-acento); outline-offset: 2px; }
+.btn { display:inline-flex; align-items:center; gap:.4rem; padding:.5rem .9rem; border-radius:.5rem; font-weight:600; font-size:.875rem; cursor:pointer; transition:filter .15s; }
+.btn:disabled { opacity:.55; cursor:not-allowed; }
+.btn-primario { background: var(--muni-rojo); color:#fff; }
+.btn-primario:hover:not(:disabled) { filter: brightness(.92); }
+.btn-sec { background:#fff; color:#334155; border:1px solid #cbd5e1; }
+.btn-sec:hover:not(:disabled) { background:#f1f5f9; }
+.campo { width:100%; padding:.55rem .75rem; border:1px solid #cbd5e1; border-radius:.5rem; background:#fff; color:#1e293b; }
+.campo:disabled, .campo[readonly] { background:#f1f5f9; color:#475569; }
+.campo.invalido { border-color:#dc2626; }
+.etiqueta { display:block; font-size:.75rem; font-weight:700; text-transform:uppercase; color:#475569; margin-bottom:.25rem; }
+.error-campo { color:#b91c1c; font-size:.75rem; margin-top:.2rem; }
+.tabla th { text-align:left; font-size:.72rem; text-transform:uppercase; color:#475569; padding:.6rem .75rem; background:#f1f5f9; }
+.tabla td { padding:.55rem .75rem; border-top:1px solid #e2e8f0; font-size:.875rem; vertical-align:top; }
+.pastilla { display:inline-block; padding:.1rem .55rem; border-radius:999px; font-size:.72rem; font-weight:700; }
+.p-ok { background:#dcfce7; color:#166534; } .p-off { background:#e2e8f0; color:#475569; }
+.cod-caja { width:2.75rem; height:3.25rem; text-align:center; font-size:1.5rem; font-weight:700; border-radius:.5rem; border:2px solid #cbd5e1; background:#fff; color:#0f172a; }
+.cod-caja:focus { border-color: var(--muni-acento); }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }

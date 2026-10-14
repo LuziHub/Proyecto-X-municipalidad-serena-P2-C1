@@ -1,133 +1,184 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperación de Contraseña - SGR La Serena</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .bg-faro-login {
-            background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), url('/assets/faro%20login.jpg');
-            background-size: cover; 
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
-        .bg-muni-red { background-color: #C41230; }
-        .text-muni-red { color: #C41230; }
-        .border-muni-red { border-color: #C41230; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperar contraseña | SGR Municipalidad de La Serena</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/sgr.css">
 </head>
-<body class="bg-slate-50 font-sans min-h-screen flex items-center justify-center bg-faro-login p-4">
-
-    <!-- Contenedor Principal de Recuperación -->
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 border-t-4 border-[#C41230]">
-        
-        <!-- Cabecera del Formulario -->
-        <div class="text-center mb-6">
-            <img src="/assets/logo%20tinta.png" alt="Logo La Serena" class="h-20 mx-auto object-contain mb-2" onError="this.onerror=null; this.src='/assets/logo-tinta.png';">
-            <h2 class="text-xl font-bold text-slate-900 tracking-wide">Recuperación de Acceso SGR</h2>
-            <p class="text-xs text-slate-500 mt-1">Municipalidad de La Serena</p>
-        </div>
-
-        <!-- PASO 1: Solicitar Código -->
-        <div id="step-1" class="space-y-4">
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Correo Institucional</label>
-                <input type="email" id="correo-rec" placeholder="usuario@laserena.cl" class="w-full px-3.5 py-2.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#C41230]">
-            </div>
-            <button onclick="enviarCodigo()" class="w-full bg-[#C41230] hover:bg-red-800 text-white font-bold py-2.5 rounded-lg text-sm transition-all duration-200 shadow-md">
-                Solicitar Código (6 dígitos)
-            </button>
-        </div>
-
-        <!-- PASO 2: Validar Código de 6 dígitos y Nueva Contraseña -->
-        <div id="step-2" class="hidden space-y-4">
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Código de Verificación (6 dígitos)</label>
-                <input type="text" id="codigo-verificacion" maxlength="6" placeholder="123456" class="w-full px-3.5 py-2.5 border rounded-lg text-center tracking-widest text-xl font-bold outline-none focus:ring-2 focus:ring-[#C41230]">
-                <p class="text-[10px] text-slate-400 mt-1 text-center">Puede pegar el código directamente en el campo.</p>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Nueva Contraseña</label>
-                <input type="password" id="nueva-pass" placeholder="••••••••" class="w-full px-3.5 py-2.5 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#C41230]">
-                <p class="text-[10px] text-slate-500 mt-1">Requisitos: Mínimo 8 caracteres, al menos una letra y un número.</p>
-            </div>
-            <button onclick="validarYActualizar()" class="w-full bg-[#C41230] hover:bg-red-800 text-white font-bold py-2.5 rounded-lg text-sm transition-all duration-200 shadow-md">
-                Actualizar Contraseña
-            </button>
-        </div>
-
-        <!-- Enlace de Retorno al Login -->
-        <div class="text-center mt-6 pt-4 border-t border-slate-100">
-            <a href="/" class="text-xs text-[#C41230] hover:underline font-medium inline-flex items-center gap-1">
-                <i class="fa-solid fa-arrow-left"></i> Volver al Login
-            </a>
-        </div>
+<body class="bg-faro-login font-sans text-slate-800 min-h-screen flex flex-col">
+  <header class="bg-muni-red text-white shadow-md border-b-4 border-amber-500">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center space-x-3">
+      <div class="bg-white px-3 py-1.5 rounded-lg shadow-sm"><img src="/assets/horizontal-color.png" alt="Municipalidad de La Serena" class="h-9 md:h-10 w-auto" onerror="this.onerror=null;this.src='/assets/horizontal-color.svg';"></div>
+      <div class="border-l border-white/30 pl-3"><p class="text-xs text-red-100 font-medium">Recuperación de contraseña</p></div>
     </div>
+  </header>
 
-    <!-- Script de Lógica del Flujo de Recuperación -->
-    <script>
-        const API_URL = 'http://localhost:3000/api';
+  <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 flex items-center justify-center">
+    <section class="max-w-md w-full bg-[#DB0032] text-white rounded-2xl shadow-2xl border border-red-400/30 p-8">
+      <ol class="flex items-center justify-center gap-2 mb-6 text-xs font-bold" aria-label="Pasos">
+        <li id="p1" class="px-3 py-1 rounded-full bg-white text-red-700">1. Correo</li>
+        <li id="p2" class="px-3 py-1 rounded-full bg-red-900/40">2. Código</li>
+        <li id="p3" class="px-3 py-1 rounded-full bg-red-900/40">3. Nueva clave</li>
+      </ol>
 
-        async function enviarCodigo() {
-            const correo = document.getElementById('correo-rec').value.trim();
-            if (!correo) {
-                Swal.fire('Atención', 'Ingrese su correo institucional.', 'warning');
-                return;
-            }
+      <!-- Pantalla 1: solicitar código -->
+      <form id="f1" novalidate class="space-y-4">
+        <h1 class="text-xl font-bold text-center">¿Olvidó su contraseña?</h1>
+        <p class="text-xs text-red-100 text-center">Ingrese su correo institucional y le enviaremos un código de 6 dígitos.</p>
+        <div>
+          <label for="correo" class="block text-xs font-semibold uppercase text-red-100 mb-1">Correo institucional</label>
+          <input id="correo" type="email" class="campo" placeholder="usuario@laserena.cl" autocomplete="email" maxlength="150">
+        </div>
+        <button id="b1" class="w-full bg-slate-900 hover:bg-slate-950 disabled:opacity-60 text-white font-bold py-3 rounded-lg" type="submit">Enviar código</button>
+        <div class="text-center"><a href="/" class="text-xs text-red-100 underline hover:text-white">Volver al inicio de sesión</a></div>
+      </form>
 
-            try {
-                const res = await fetch(`${API_URL}/auth/forgot-password`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ correo })
-                });
-                const data = await res.json();
-                
-                Swal.fire('Información', data.message, 'info');
-                document.getElementById('step-1').classList.add('hidden');
-                document.getElementById('step-2').classList.remove('hidden');
-            } catch (err) {
-                Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
-            }
-        }
+      <!-- Pantalla 2: código -->
+      <form id="f2" novalidate class="space-y-4 hidden">
+        <h1 class="text-xl font-bold text-center">Ingrese el código</h1>
+        <p class="text-xs text-red-100 text-center">Lo enviamos a <strong id="dest"></strong>. Vence en <span id="vig">10</span> minutos y tiene 3 intentos.</p>
+        <div id="cajas" class="flex justify-center gap-2" role="group" aria-label="Código de 6 dígitos"></div>
+        <button id="b2" class="w-full bg-slate-900 hover:bg-slate-950 disabled:opacity-60 text-white font-bold py-3 rounded-lg" type="submit">Verificar código</button>
+        <div class="text-center text-xs text-red-100">
+          <button type="button" id="reenviar" class="underline disabled:no-underline disabled:opacity-70" disabled>Reenviar código</button>
+          <span id="cuenta"></span>
+          · <button type="button" id="cambiar" class="underline">Cambiar correo</button>
+        </div>
+      </form>
 
-        async function validarYActualizar() {
-            const correo = document.getElementById('correo-rec').value.trim();
-            const codigo = document.getElementById('codigo-verificacion').value.trim();
-            const nuevaPassword = document.getElementById('nueva-pass').value;
+      <!-- Pantalla 3: nueva contraseña -->
+      <form id="f3" novalidate class="space-y-4 hidden">
+        <h1 class="text-xl font-bold text-center">Cree su nueva contraseña</h1>
+        <p class="text-xs text-red-100 text-center">Mínimo 8 caracteres, con al menos una letra y un número.</p>
+        <div>
+          <label for="n1" class="block text-xs font-semibold uppercase text-red-100 mb-1">Nueva contraseña</label>
+          <div class="relative"><input id="n1" type="password" class="campo pr-10" autocomplete="new-password" maxlength="100">
+            <button type="button" class="ver absolute inset-y-0 right-0 px-3 text-slate-500" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye"></i></button></div>
+        </div>
+        <div>
+          <label for="n2" class="block text-xs font-semibold uppercase text-red-100 mb-1">Confirmar contraseña</label>
+          <div class="relative"><input id="n2" type="password" class="campo pr-10" autocomplete="new-password" maxlength="100">
+            <button type="button" class="ver absolute inset-y-0 right-0 px-3 text-slate-500" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye"></i></button></div>
+        </div>
+        <button id="b3" class="w-full bg-slate-900 hover:bg-slate-950 disabled:opacity-60 text-white font-bold py-3 rounded-lg" type="submit">Guardar contraseña</button>
+      </form>
+    </section>
+  </main>
 
-            try {
-                const res = await fetch(`${API_URL}/auth/reset-password`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ correo, codigo, nuevaPassword })
-                });
-                const data = await res.json();
+  <script src="/sgr.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    let correo = '', tokenReset = '', espera = 45, temporizador = null;
 
-                if (res.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Éxito!',
-                        text: data.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.href = '/';
-                    });
-                } else {
-                    Swal.fire('Error de Validación', data.message, 'error');
-                }
-            } catch (err) {
-                Swal.fire('Error', 'No se pudo procesar la solicitud.', 'error');
-            }
-        }
-    </script>
+    function paso(n) {
+      [1, 2, 3].forEach(i => {
+        $('f' + i).classList.toggle('hidden', i !== n);
+        $('p' + i).className = 'px-3 py-1 rounded-full ' + (i === n ? 'bg-white text-red-700' : 'bg-red-900/40');
+      });
+    }
+
+    // Cajas del código: avanzar al escribir, retroceder con Backspace, flechas y pegado completo.
+    const cajas = [];
+    for (let i = 0; i < 6; i++) {
+      const c = document.createElement('input');
+      c.className = 'cod-caja'; c.inputMode = 'numeric'; c.maxLength = 1; c.autocomplete = 'one-time-code';
+      c.setAttribute('aria-label', 'Dígito ' + (i + 1));
+      c.addEventListener('input', () => {
+        c.value = c.value.replace(/\D/g, '').slice(0, 1);
+        if (c.value && cajas[i + 1]) cajas[i + 1].focus();
+      });
+      c.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !c.value && cajas[i - 1]) { cajas[i - 1].focus(); cajas[i - 1].value = ''; e.preventDefault(); }
+        if (e.key === 'ArrowLeft' && cajas[i - 1]) cajas[i - 1].focus();
+        if (e.key === 'ArrowRight' && cajas[i + 1]) cajas[i + 1].focus();
+      });
+      c.addEventListener('paste', e => {
+        const t = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+        if (!t) return;
+        e.preventDefault();
+        t.split('').forEach((d, k) => { cajas[k].value = d; });
+        cajas[Math.min(t.length, 5)].focus();
+      });
+      cajas.push(c); $('cajas').appendChild(c);
+    }
+    const codigo = () => cajas.map(c => c.value).join('');
+    function limpiarCajas() { cajas.forEach(c => { c.value = ''; }); cajas[0].focus(); }
+
+    function iniciarCuenta(seg) {
+      clearInterval(temporizador);
+      let resta = seg;
+      $('reenviar').disabled = true;
+      const pintar = () => { $('cuenta').textContent = resta > 0 ? `(disponible en ${resta} s)` : ''; };
+      pintar();
+      temporizador = setInterval(() => {
+        resta -= 1; pintar();
+        if (resta <= 0) { clearInterval(temporizador); $('reenviar').disabled = false; }
+      }, 1000);
+    }
+
+    async function solicitar(esReenvio) {
+      const r = await api('/auth/forgot-password', { method: 'POST', body: { correo }, sinRedirigir: true });
+      if (!r.ok) { aviso(r.status === 429 ? 'warning' : 'error', 'No se pudo enviar', r.data.message || 'Error del servidor.'); return false; }
+      espera = r.data.esperaSegundos || 45;
+      $('vig').textContent = r.data.vigenciaMinutos || 10;
+      $('dest').textContent = correo;
+      iniciarCuenta(espera);
+      if (esReenvio) toast('success', 'Si el correo está registrado, enviamos un nuevo código.');
+      return true;
+    }
+
+    $('f1').addEventListener('submit', async e => {
+      e.preventDefault();
+      correo = $('correo').value.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) { aviso('warning', 'Correo no válido', 'Ingrese un correo electrónico válido.'); return; }
+      $('b1').disabled = true;
+      const ok = await solicitar(false);
+      $('b1').disabled = false;
+      if (ok) { paso(2); limpiarCajas(); }
+    });
+
+    $('reenviar').addEventListener('click', async () => {
+      $('reenviar').disabled = true;
+      const ok = await solicitar(true);
+      if (ok) limpiarCajas(); else $('reenviar').disabled = false;
+    });
+    $('cambiar').addEventListener('click', () => { clearInterval(temporizador); paso(1); });
+
+    $('f2').addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!/^\d{6}$/.test(codigo())) { aviso('warning', 'Código incompleto', 'Ingrese los 6 dígitos del código.'); return; }
+      $('b2').disabled = true;
+      const r = await api('/auth/verify-code', { method: 'POST', body: { correo, codigo: codigo() }, sinRedirigir: true });
+      $('b2').disabled = false;
+      if (!r.ok) { aviso('error', 'Código no válido', r.data.message || 'Error del servidor.'); limpiarCajas(); return; }
+      tokenReset = r.data.token; clearInterval(temporizador); paso(3); $('n1').focus();
+    });
+
+    document.querySelectorAll('.ver').forEach(b => b.addEventListener('click', () => {
+      const campo = b.parentElement.querySelector('input');
+      campo.type = campo.type === 'password' ? 'text' : 'password';
+    }));
+
+    $('f3').addEventListener('submit', async e => {
+      e.preventDefault();
+      const a = $('n1').value, b = $('n2').value;
+      if (a.length < 8 || !/[A-Za-z]/.test(a) || !/\d/.test(a)) { aviso('warning', 'Contraseña débil', 'Debe tener mínimo 8 caracteres, con al menos una letra y un número.'); return; }
+      if (a !== b) { aviso('warning', 'Las contraseñas no coinciden', 'Verifique que ambas sean idénticas.'); return; }
+      $('b3').disabled = true;
+      const r = await api('/auth/reset-password', { method: 'POST', body: { token: tokenReset, nuevaPassword: a, confirmacion: b }, sinRedirigir: true });
+      $('b3').disabled = false;
+      if (!r.ok) {
+        await aviso('error', 'No se pudo cambiar la contraseña', r.data.message || 'Error del servidor.');
+        if (/expir|solicita/i.test(r.data.message || '')) { paso(1); }
+        return;
+      }
+      await Swal.fire({ icon: 'success', title: 'Contraseña actualizada', text: 'Ya puede ingresar con su nueva contraseña.', confirmButtonColor: '#DB0032' });
+      window.location.href = '/';
+    });
+  </script>
 </body>
 </html>

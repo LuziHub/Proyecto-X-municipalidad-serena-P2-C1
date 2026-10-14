@@ -1,284 +1,527 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel SGR - Municipalidad de La Serena</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .bg-muni-red { background-color: #C41230; }
-        .text-muni-red { color: #C41230; }
-        .border-muni-red { border-color: #C41230; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel SGR | Municipalidad de La Serena</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/sgr.css">
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
-
-    <!-- Cabecera Institucional Permanente -->
-    <header class="bg-[#C41230] text-white shadow-md border-b-4 border-amber-500">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
-            <!-- Logo oficial -->
-            <div class="flex items-center space-x-3">
-                <div class="bg-white px-3 py-1.5 rounded-lg shadow-sm flex items-center">
-                    <img src="/assets/horizontal-color.png" alt="Municipalidad de La Serena" class="h-8 w-auto object-contain">
-                </div>
-            </div>
-
-            <!-- Delegación Actual y Selector -->
-            <div class="flex items-center space-x-3 bg-red-900/40 px-3 py-1.5 rounded-lg border border-red-400/30">
-                <i class="fa-solid fa-building-columns text-amber-300"></i>
-                <div>
-                    <p class="text-[10px] text-red-200 uppercase font-semibold">Delegación Activa</p>
-                    <div class="flex items-center space-x-2">
-                        <span id="label-delegacion" class="text-xs font-bold">DEL-01: Oficina Central La Serena</span>
-                        <select id="selector-delegacion" onchange="cambiarDelegacionActiva(this.value)" class="hidden text-xs bg-slate-900 text-white px-2 py-0.5 rounded outline-none border border-red-400">
-                            <!-- Inyectado si tiene múltiples delegaciones -->
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Usuario y Rol -->
-            <div class="flex items-center space-x-3">
-                <div class="text-right">
-                    <p id="nav-username" class="text-xs font-bold">Nombre Usuario</p>
-                    <p id="nav-rol" class="text-[10px] text-red-200 uppercase font-semibold">Rol</p>
-                </div>
-                <button onclick="cerrarSesion()" class="bg-slate-900 hover:bg-slate-950 text-white px-3 py-1.5 rounded text-xs transition">
-                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Salir
-                </button>
-            </div>
+<body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col">
+  <header class="bg-muni-red text-white shadow-md border-b-4 border-amber-500">
+    <div class="px-4 py-2.5 flex flex-wrap items-center gap-3">
+      <div class="bg-white px-3 py-1.5 rounded-lg"><img src="/assets/horizontal-color.png" alt="Municipalidad de La Serena" class="h-9 w-auto" onerror="this.onerror=null;this.src='/assets/horizontal-color.svg';"></div>
+      <p class="text-xs text-red-100 font-medium border-l border-white/30 pl-3 hidden sm:block">Sistema de Gestión y Registro (SGR)</p>
+      <div class="ml-auto flex flex-wrap items-center gap-3">
+        <div id="insignia" class="flex items-center gap-2 bg-white/15 border border-white/30 rounded-lg px-3 py-1.5 text-sm" title="Delegación en la que estás operando">
+          <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+          <span class="sr-only">Delegación activa:</span>
+          <strong id="del-nombre">—</strong>
+          <select id="del-selector" class="hidden text-slate-800 rounded px-1 py-0.5 text-xs" aria-label="Cambiar de delegación"></select>
         </div>
-    </header>
-
-    <!-- Contenedor Principal -->
-    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
-
-        <!-- Navegación de Módulos (Filtrada por Rol) -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-red-100 flex flex-wrap gap-2 items-center">
-            <div id="menu-modulos" class="flex flex-wrap gap-2">
-                <!-- Inyectado dinámicamente -->
-            </div>
+        <div class="text-right leading-tight text-xs">
+          <div class="font-bold" id="u-nombre"></div>
+          <div class="text-red-100" id="u-rol"></div>
         </div>
-
-        <!-- Módulo Activo -->
-        <div class="bg-white rounded-xl shadow-sm border border-red-100 p-6 space-y-4">
-            <div class="flex flex-wrap justify-between items-center gap-4">
-                <h3 id="modulo-titulo" class="text-xl font-bold text-slate-900 border-l-4 border-[#C41230] pl-3">Gestión</h3>
-                <div class="flex gap-2">
-                    <button onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-medium"><i class="fa-solid fa-file-excel mr-1"></i> Exportar</button>
-                    <button onclick="abrirModalCrear()" class="bg-[#C41230] hover:bg-red-800 text-white px-3 py-2 rounded-lg text-sm font-medium"><i class="fa-solid fa-plus mr-1"></i> Nuevo</button>
-                </div>
-            </div>
-
-            <!-- Búsqueda y Filtros -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border">
-                <input type="text" id="filtro-busqueda" oninput="aplicarFiltros()" placeholder="Buscar (insensible a mayúsculas)..." class="p-2 border rounded-lg text-sm w-full">
-                <select id="filtro-estado" onchange="aplicarFiltros()" class="p-2 border rounded-lg text-sm w-full">
-                    <option value="">-- Todos los Estados --</option>
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                </select>
-                <div class="text-right text-xs text-slate-500 self-center font-semibold" id="total-resultados">Total: 0</div>
-            </div>
-
-            <!-- Tabla -->
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse" id="tabla-datos">
-                    <thead>
-                        <tr class="bg-red-50 text-red-900 uppercase text-xs font-semibold">
-                            <th class="p-3">ID / Código</th>
-                            <th class="p-3">Nombre / Detalle</th>
-                            <th class="p-3">Estado</th>
-                            <th class="p-3 text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-datos" class="divide-y divide-slate-100 text-sm"></tbody>
-                </table>
-            </div>
-
-            <!-- Paginador -->
-            <div class="flex justify-between items-center pt-3 border-t text-sm">
-                <button id="btn-prev" onclick="cambiarPagina(-1)" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200">Anterior</button>
-                <span id="info-pagina" class="text-xs text-slate-600">Página 1 de 1</span>
-                <button id="btn-next" onclick="cambiarPagina(1)" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200">Siguiente</button>
-            </div>
-        </div>
-    </main>
-
-    <!-- Modal Formulario -->
-    <div id="modal-crear" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 border-t-4 border-[#C41230]">
-            <h3 id="modal-titulo" class="text-lg font-bold text-slate-900 mb-4">Registro</h3>
-            <form id="form-crear" onsubmit="guardarRegistro(event)" class="space-y-3">
-                <input type="hidden" id="edit-id">
-                <div id="modal-inputs" class="space-y-3"></div>
-                <div class="flex justify-end space-x-2 pt-3 border-t">
-                    <button type="button" onclick="cerrarModal()" class="px-4 py-2 bg-slate-100 rounded-lg text-sm">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-[#C41230] text-white rounded-lg text-sm">Guardar</button>
-                </div>
-            </form>
-        </div>
+        <button id="salir" class="btn btn-sec !py-1.5"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+      </div>
     </div>
+  </header>
 
-    <script>
-        let token = localStorage.getItem('sgr_token') || '';
-        let usuario = JSON.parse(localStorage.getItem('sgr_user') || '{}');
-        let moduloActual = 'atenciones';
-        let paginaActual = 1;
-        let busquedaActual = '';
-        let estadoActual = '';
-        const API_URL = 'http://localhost:3000/api';
+  <div class="flex flex-1 flex-col md:flex-row">
+    <nav id="menu" class="md:w-60 bg-white border-r border-slate-200 p-3 flex md:flex-col gap-1 overflow-x-auto" aria-label="Módulos"></nav>
+    <main id="contenido" class="flex-1 p-4 md:p-6 min-w-0" aria-live="polite"></main>
+  </div>
 
-        document.addEventListener("DOMContentLoaded", () => {
-            if (!token) {
-                window.location.href = 'index.html';
-                return;
-            }
-            inicializarCabecera();
-            construirMenu();
-            cargarDatos();
-        });
+  <script src="/sgr.js"></script>
+  <script>
+  const $ = id => document.getElementById(id);
+  let usuario = Sesion.usuario();
+  if (!Sesion.token() || !usuario) window.location.replace('/');
 
-        function inicializarCabecera() {
-            document.getElementById('nav-username').innerText = usuario.nombre || 'Funcionario';
-            document.getElementById('nav-rol').innerText = usuario.rol || 'Funcionario';
-            document.getElementById('label-delegacion').innerText = `${usuario.delegacion || 'DEL-01'}: Oficina Central`;
-            
-            // Si el usuario tiene múltiples delegaciones, habilitar selector
-            if (usuario.delegaciones && usuario.delegaciones.length > 1) {
-                const sel = document.getElementById('selector-delegacion');
-                sel.classList.remove('hidden');
-                sel.innerHTML = usuario.delegaciones.map(d => `<option value="${d}">${d}</option>`).join('');
-            }
+  // ── Definición de pantallas (qué columnas y campos tiene cada módulo) ──────
+  const ESTADOS_ACTIVO = ['Activo', 'Inactivo'], ESTADOS_ACTIVA = ['Activa', 'Inactiva'];
+  const MODULOS = {
+    'atenciones': { etiqueta: 'Atenciones', icono: 'fa-clipboard-list', singular: 'atención',
+      columnas: [['identificador_atencion', 'Identificador'], ['fecha_registro', 'Fecha', 'fecha'], ['solicitante', 'Solicitante'], ['tipo', 'Tipo'], ['sub_atencion', 'Sub atención'], ['delegacion_codigo', 'Delegación'], ['responsable', 'Responsable']],
+      campos: [] },
+    'delegaciones': { etiqueta: 'Delegaciones', icono: 'fa-building-columns', singular: 'delegación', estados: ESTADOS_ACTIVA,
+      columnas: [['codigo', 'Código'], ['nombre', 'Nombre'], ['direccion', 'Dirección'], ['comuna', 'Comuna'], ['estado', 'Estado', 'estado']],
+      campos: [{ k: 'codigo', l: 'Código', max: 10, req: 1 }, { k: 'nombre', l: 'Nombre', max: 100, req: 1 }, { k: 'direccion', l: 'Dirección', max: 255, req: 1 }, { k: 'comuna', l: 'Comuna', max: 100, def: 'La Serena' }, { k: 'estado', l: 'Estado', t: 'sel', op: ESTADOS_ACTIVA, def: 'Activa' }] },
+    'roles': { etiqueta: 'Roles', icono: 'fa-user-shield', singular: 'rol', estados: ESTADOS_ACTIVO,
+      columnas: [['codigo', 'Código'], ['nombre', 'Nombre'], ['descripcion', 'Descripción'], ['alcance', 'Alcance'], ['estado', 'Estado', 'estado']],
+      campos: [{ k: 'codigo', l: 'Código', max: 10, req: 1 }, { k: 'nombre', l: 'Nombre', max: 50, req: 1 }, { k: 'descripcion', l: 'Descripción', max: 255 },
+        { k: 'alcance', l: 'Alcance', t: 'sel', op: [], def: 'Delegación' }, { k: 'estado', l: 'Estado', t: 'sel', op: ESTADOS_ACTIVO, def: 'Activo' }, { k: 'permisos', l: 'Permisos', t: 'permisos' }] },
+    'usuarios': { etiqueta: 'Usuarios', icono: 'fa-users', singular: 'usuario', estados: ESTADOS_ACTIVO,
+      columnas: [['nombre', 'Nombre'], ['correo', 'Correo'], ['rut', 'RUT'], ['rol', 'Rol'], ['delegacion_codigo', 'Delegación'], ['estado', 'Estado', 'estado']],
+      campos: [{ k: 'nombre', l: 'Nombre completo', max: 150, req: 1 }, { k: 'correo', l: 'Correo', max: 150, req: 1, tipo: 'email' }, { k: 'rut', l: 'RUT (opcional)', max: 12, ph: '12345678-5' },
+        { k: 'id_rol', l: 'Rol', t: 'sel', lookup: 'roles', req: 1 }, { k: 'id_delegacion_activa', l: 'Delegación principal', t: 'sel', lookup: 'delegaciones', req: 1 },
+        { k: 'delegaciones', l: 'Delegaciones autorizadas', t: 'multi' },
+        { k: 'password', l: 'Contraseña', t: 'clave' }, { k: 'estado', l: 'Estado', t: 'sel', op: ESTADOS_ACTIVO, def: 'Activo' }] },
+    'items-metas': { etiqueta: 'Ítems y metas', icono: 'fa-bullseye', singular: 'ítem', estados: ESTADOS_ACTIVO,
+      columnas: [['codigo', 'Código'], ['nombre', 'Nombre'], ['descripcion', 'Descripción'], ['estado', 'Estado', 'estado']],
+      campos: [{ k: 'codigo', l: 'Código', max: 10, req: 1 }, { k: 'nombre', l: 'Nombre', max: 100, req: 1 }, { k: 'descripcion', l: 'Descripción', max: 255, req: 1, t: 'area' }, { k: 'estado', l: 'Estado', t: 'sel', op: ESTADOS_ACTIVO, def: 'Activo' }] },
+    'tipos-atencion': { etiqueta: 'Tipo de Atención', icono: 'fa-tags', singular: 'tipo de atención', estados: ESTADOS_ACTIVO,
+      columnas: [['codigo', 'Código'], ['nombre', 'Nombre'], ['descripcion', 'Descripción'], ['estado', 'Estado', 'estado']],
+      campos: [{ k: 'codigo', l: 'Código', max: 10, req: 1 }, { k: 'nombre', l: 'Nombre', max: 100, req: 1 }, { k: 'descripcion', l: 'Descripción', max: 255, req: 1, t: 'area' }, { k: 'estado', l: 'Estado', t: 'sel', op: ESTADOS_ACTIVO, def: 'Activo' }] },
+    'sub-atenciones': { etiqueta: 'Sub Atención', icono: 'fa-sitemap', singular: 'sub atención', estados: ESTADOS_ACTIVA,
+      columnas: [['codigo', 'Código'], ['nombre', 'Nombre'], ['tipo', 'Tipo de Atención'], ['estado', 'Estado', 'estado']],
+      campos: [{ k: 'codigo', l: 'Código', max: 10, req: 1 }, { k: 'nombre', l: 'Nombre', max: 100, req: 1 }, { k: 'id_tipo', l: 'Tipo de Atención', t: 'sel', lookup: 'tipos', req: 1 }, { k: 'estado', l: 'Estado', t: 'sel', op: ESTADOS_ACTIVA, def: 'Activa' }] }
+  };
+  const ORDEN = ['atenciones', 'delegaciones', 'roles', 'usuarios', 'items-metas', 'tipos-atencion', 'sub-atenciones'];
+
+  // Campos que muestra la vista de consulta ("Ver") de cada módulo.
+  const VER = {
+    'atenciones': [['identificador_atencion', 'Identificador'], ['fecha_registro', 'Fecha y hora de registro', 'fecha'], ['solicitante', 'Solicitante'], ['tipo', 'Tipo de atención'], ['sub_atencion', 'Sub atención'], ['descripcion', 'Descripción'], ['delegacion', 'Delegación'], ['responsable', 'Responsable']],
+    'delegaciones': [['codigo', 'Código'], ['nombre', 'Nombre'], ['direccion', 'Dirección'], ['comuna', 'Comuna'], ['estado', 'Estado'], ['created_at', 'Creada', 'fecha']],
+    'roles': [['codigo', 'Código'], ['nombre', 'Nombre'], ['descripcion', 'Descripción'], ['alcance', 'Alcance'], ['estado', 'Estado'], ['permisos', 'Permisos', 'permisos']],
+    'usuarios': [['nombre', 'Nombre'], ['correo', 'Correo'], ['rut', 'RUT'], ['rol', 'Rol'], ['delegacion', 'Delegación principal'], ['delegaciones', 'Delegaciones autorizadas', 'delegaciones'], ['estado', 'Estado'], ['ultimo_ingreso', 'Último ingreso', 'fecha']],
+    'items-metas': [['codigo', 'Código'], ['nombre', 'Nombre'], ['descripcion', 'Descripción'], ['estado', 'Estado']],
+    'tipos-atencion': [['codigo', 'Código'], ['nombre', 'Nombre'], ['descripcion', 'Descripción'], ['estado', 'Estado']],
+    'sub-atenciones': [['codigo', 'Código'], ['nombre', 'Nombre'], ['tipo', 'Tipo de Atención'], ['estado', 'Estado']]
+  };
+
+  // Módulos que en esta entrega son solo plantilla: navegación y vista por rol, sin lógica (datos ilustrativos).
+  const PLANTILLAS = {
+    'vecinos': { icono: 'fa-people-roof', titulo: 'Vecinos', texto: 'Catálogo de vecinos para identificar al solicitante de una atención.',
+      cols: ['RUT', 'Nombre', 'Comuna', 'Teléfono'], filas: [['11.111.111-1', 'Persona de ejemplo A', 'La Serena', '+56 9 0000 0001'], ['22.222.222-2', 'Persona de ejemplo B', 'La Serena', '+56 9 0000 0002'], ['33.333.333-3', 'Persona de ejemplo C', 'La Serena', '+56 9 0000 0003']] },
+    'tipos-gestion': { icono: 'fa-list-check', titulo: 'Tipo de Gestión', texto: 'Clasificación de las gestiones que se realizan sobre una atención.',
+      cols: ['Código', 'Nombre', 'Descripción', 'Estado'], filas: [['TG01', 'Derivación', 'Deriva a otra unidad', 'Activo'], ['TG02', 'Seguimiento', 'Control posterior', 'Activo'], ['TG03', 'Cierre', 'Finaliza la gestión', 'Inactivo']] },
+    'verificacion': { icono: 'fa-clipboard-check', titulo: 'Verificación de evidencias', texto: 'Revisión y validación de las evidencias adjuntas a las atenciones.',
+      cols: ['Folio', 'Atención', 'Evidencia', 'Estado de verificación'], filas: [['VER-001', 'ATC-0000-000001', 'Fotografía', 'Pendiente'], ['VER-002', 'ATC-0000-000002', 'Documento', 'Verificada'], ['VER-003', 'ATC-0000-000003', 'Fotografía', 'Observada']] },
+    'alertas': { icono: 'fa-bell', titulo: 'Alertas', texto: 'Avisos institucionales y de trazabilidad del sistema.',
+      cols: ['Fecha', 'Tipo', 'Mensaje', 'Prioridad'], filas: [['01-01-2000 10:00', 'Plazo', 'Atención próxima a vencer (ejemplo)', 'Alta'], ['01-01-2000 11:30', 'Sistema', 'Evidencia sin verificar (ejemplo)', 'Media'], ['01-01-2000 12:15', 'Aviso', 'Nueva delegación habilitada (ejemplo)', 'Baja']] },
+    'reportes': { icono: 'fa-chart-column', titulo: 'Reportes', texto: 'Indicadores y resúmenes de la gestión municipal.',
+      cols: ['Indicador', 'Periodo', 'Valor', 'Variación'], filas: [['Atenciones registradas', 'Mes de ejemplo', '000', '+0 %'], ['Atenciones cerradas', 'Mes de ejemplo', '000', '+0 %'], ['Tiempo medio de respuesta', 'Mes de ejemplo', '0 días', '0 %']] }
+  };
+
+  const puede = (m, a) => !!(usuario.permisos && usuario.permisos[m] && usuario.permisos[m].includes(a));
+  let config = { modulos: {}, acciones: [], alcances: [] };
+  let actual = null, vista = 'lista', estadoLista = { page: 1, search: '', estado: '' }, sucio = false;
+
+  // ── Cabecera: insignia de delegación, usuario, salir ───────────────────────
+  function pintarCabecera() {
+    $('u-nombre').textContent = usuario.nombre;
+    $('u-rol').textContent = `${usuario.rol} · alcance ${usuario.alcance}`;
+    const act = usuario.delegacionActiva;
+    $('del-nombre').textContent = act ? `${act.codigo ? act.codigo + ' · ' : ''}${act.nombre}` : 'Sin delegación';
+    const sel = $('del-selector');
+    if (usuario.delegaciones.length > 1) {
+      sel.classList.remove('hidden'); $('del-nombre').classList.add('hidden');
+      sel.innerHTML = usuario.delegaciones.map(d => `<option value="${d.id}" ${act && act.id === d.id ? 'selected' : ''}>${esc(d.codigo ? d.codigo + ' · ' : '')}${esc(d.nombre)}</option>`).join('');
+    } else { sel.classList.add('hidden'); $('del-nombre').classList.remove('hidden'); }
+  }
+  $('del-selector').addEventListener('change', async e => {
+    const nueva = Number(e.target.value);
+    const previa = usuario.delegacionActiva.id;
+    if (sucio) {
+      const c = await Swal.fire({ icon: 'warning', title: 'Cambios sin guardar', text: 'Si cambias de delegación se perderá lo que estás escribiendo.', showCancelButton: true, confirmButtonText: 'Cambiar', cancelButtonText: 'Seguir aquí', confirmButtonColor: '#DB0032' });
+      if (!c.isConfirmed) { e.target.value = previa; return; }
+    }
+    const r = await api('/auth/delegacion', { method: 'POST', body: { id: nueva } });
+    if (!r.ok) { aviso('error', 'No se pudo cambiar', r.data.message); e.target.value = previa; return; }
+    Sesion.fijarDelegacion(nueva);
+    usuario.delegacionActiva = usuario.delegaciones.find(d => d.id === nueva);
+    Sesion.actualizarUsuario(usuario);
+    sucio = false; pintarCabecera();
+    toast('success', `Delegación activa: ${usuario.delegacionActiva.nombre}`);
+    abrir(actual || primero());
+  });
+  $('salir').addEventListener('click', async () => {
+    if (sucio) {
+      const c = await Swal.fire({ icon: 'warning', title: 'Cambios sin guardar', text: 'Si cierras la sesión se perderá lo que estás escribiendo.', showCancelButton: true, confirmButtonText: 'Cerrar sesión', cancelButtonText: 'Quedarme', confirmButtonColor: '#DB0032' });
+      if (!c.isConfirmed) return;
+    }
+    sucio = false;
+    await api('/auth/logout', { method: 'POST', sinRedirigir: true });   // invalida el token en el servidor
+    Sesion.cerrar();
+    window.location.replace('/');
+  });
+
+  // ── Menú según permisos ────────────────────────────────────────────────────
+  function primero() { return 'inicio'; }
+  function pintarMenu() {
+    const item = ([id, t, ic]) => `<button data-mod="${id}" class="menu-item text-left whitespace-nowrap px-3 py-2 rounded-lg text-sm font-semibold hover:bg-slate-100"><i class="fa-solid ${ic} w-5" aria-hidden="true"></i> ${esc(t)}</button>`;
+    const items = [['inicio', 'Inicio', 'fa-house']];
+    if (puede('atenciones', 'crear')) items.push(['ingreso', 'Ingreso de atención', 'fa-pen-to-square']);
+    ORDEN.filter(m => puede(m, 'ver')).forEach(m => items.push([m, MODULOS[m].etiqueta, MODULOS[m].icono]));
+    const extra = Object.keys(PLANTILLAS).filter(m => puede(m, 'ver')).map(m => [m, PLANTILLAS[m].titulo, PLANTILLAS[m].icono]);
+    $('menu').innerHTML = items.map(item).join('') +
+      (extra.length ? `<p class="hidden md:block text-[11px] uppercase font-bold text-slate-500 px-3 pt-3">Otros módulos (plantilla)</p>` + extra.map(item).join('') : '');
+    document.querySelectorAll('.menu-item').forEach(b => b.addEventListener('click', () => abrir(b.dataset.mod)));
+  }
+  function marcarMenu(id) {
+    document.querySelectorAll('.menu-item').forEach(b => {
+      const on = b.dataset.mod === id;
+      b.classList.toggle('bg-red-50', on); b.classList.toggle('text-red-700', on);
+      if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+  }
+
+  async function abrir(id) {
+    if (!id) id = 'inicio';
+    if (id !== 'inicio' && id !== 'ingreso' && !PLANTILLAS[id] && !puede(id, 'ver')) id = 'inicio';
+    if (sucio) {
+      const c = await Swal.fire({ icon: 'warning', title: 'Cambios sin guardar', text: '¿Salir de esta pantalla sin guardar?', showCancelButton: true, confirmButtonText: 'Salir', cancelButtonText: 'Quedarme', confirmButtonColor: '#DB0032' });
+      if (!c.isConfirmed) return;
+      sucio = false;
+    }
+    actual = id; marcarMenu(id);
+    if (id === 'inicio') return pantallaInicio();
+    if (id === 'ingreso') return pantallaIngreso();
+    if (PLANTILLAS[id]) return pantallaPlantilla(id);
+    estadoLista = { page: 1, search: '', estado: '' };
+    listar();
+  }
+
+  // ── Listado ────────────────────────────────────────────────────────────────
+  function celda(v, tipo) {
+    if (tipo === 'estado') return `<span class="pastilla ${['Activo', 'Activa'].includes(v) ? 'p-ok' : 'p-off'}">${esc(v)}</span>`;
+    if (tipo === 'fecha') return esc(fechaHora(v));
+    return esc(v === null || v === undefined || v === '' ? '—' : v);
+  }
+
+  async function listar() {
+    const m = MODULOS[actual];
+    const cont = $('contenido');
+    cont.innerHTML = `
+      <div class="flex flex-wrap items-center gap-2 mb-4">
+        <h1 class="text-xl font-bold mr-auto"><i class="fa-solid ${m.icono} text-red-700" aria-hidden="true"></i> ${esc(m.etiqueta)}</h1>
+        ${puede(actual, 'exportar') ? '<button id="exportar" class="btn btn-sec"><i class="fa-solid fa-file-excel text-green-700"></i> Exportar a Excel</button>' : ''}
+        ${actual === 'atenciones' ? '' : (puede(actual, 'crear') ? `<button id="nuevo" class="btn btn-primario"><i class="fa-solid fa-plus"></i> Nuevo</button>` : '')}
+        ${actual === 'atenciones' && puede('atenciones', 'crear') ? '<button id="nuevo" class="btn btn-primario"><i class="fa-solid fa-plus"></i> Registrar atención</button>' : ''}
+      </div>
+      <div class="flex flex-wrap gap-2 mb-3">
+        <input id="buscar" class="campo !w-64" placeholder="Buscar..." maxlength="100" value="${esc(estadoLista.search)}" aria-label="Buscar">
+        ${m.estados ? `<select id="f-estado" class="campo !w-40" aria-label="Filtrar por estado"><option value="">Todos los estados</option>${m.estados.map(e => `<option ${estadoLista.estado === e ? 'selected' : ''}>${e}</option>`).join('')}</select>` : ''}
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto"><div id="tabla" class="p-6 text-slate-500"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</div></div>
+      <div id="pag" class="flex items-center justify-between mt-3 text-sm"></div>`;
+
+    let t;
+    $('buscar').addEventListener('input', e => { clearTimeout(t); t = setTimeout(() => { estadoLista.search = e.target.value.trim(); estadoLista.page = 1; cargarFilas(); }, 350); });
+    if ($('f-estado')) $('f-estado').addEventListener('change', e => { estadoLista.estado = e.target.value; estadoLista.page = 1; cargarFilas(); });
+    if ($('nuevo')) $('nuevo').addEventListener('click', () => (actual === 'atenciones' ? abrir('ingreso') : formulario(null)));
+    if ($('exportar')) $('exportar').addEventListener('click', exportar);
+    cargarFilas();
+  }
+
+  async function cargarFilas() {
+    const m = MODULOS[actual], modulo = actual;
+    const q = new URLSearchParams({ page: estadoLista.page, limit: 10 });
+    if (estadoLista.search) q.set('search', estadoLista.search);
+    if (estadoLista.estado) q.set('estado', estadoLista.estado);
+    const r = await api(`/${modulo}?${q}`);
+    if (modulo !== actual || !$('tabla')) return;
+    if (!r.ok) { $('tabla').innerHTML = `<p class="text-red-700"><i class="fa-solid fa-triangle-exclamation"></i> ${esc(r.data.message || 'No se pudo cargar.')}</p>`; $('pag').innerHTML = ''; return; }
+    const filas = r.data.data, p = r.data.pagination;
+    if (!filas.length) {
+      const filtrado = !!(estadoLista.search || estadoLista.estado);
+      $('tabla').innerHTML = filtrado
+        ? `<p class="text-slate-600 p-2"><i class="fa-solid fa-magnifying-glass"></i> Sin coincidencias${estadoLista.search ? ` para «${esc(estadoLista.search)}»` : ''}. Prueba con otros términos o quita los filtros.</p><button id="quitar-filtros" class="btn btn-sec mt-2">Quitar filtros</button>`
+        : '<p class="text-slate-500 p-2"><i class="fa-regular fa-folder-open"></i> Aún no hay registros en este módulo.</p>';
+      $('pag').innerHTML = '';
+      if ($('quitar-filtros')) $('quitar-filtros').addEventListener('click', () => { estadoLista = { page: 1, search: '', estado: '' }; listar(); });
+      return;
+    }
+    const acciones = true;
+    $('tabla').className = '';
+    $('tabla').innerHTML = `<table class="tabla w-full"><thead><tr>${m.columnas.map(c => `<th scope="col">${esc(c[1])}</th>`).join('')}${acciones ? '<th scope="col">Acciones</th>' : ''}</tr></thead><tbody>
+      ${filas.map(f => `<tr>${m.columnas.map(c => `<td>${celda(f[c[0]], c[2])}</td>`).join('')}${acciones ? `<td class="whitespace-nowrap">
+        <button class="btn btn-sec !py-1" data-ver="${f.id}" aria-label="Ver ${esc(f.nombre || f.identificador_atencion || f.correo || '')}"><i class="fa-regular fa-eye"></i> Ver</button>
+        ${puede(modulo, 'editar') && modulo !== 'atenciones' ? `<button class="btn btn-sec !py-1" data-edit="${f.id}" aria-label="Editar ${esc(f.nombre || f.correo || '')}"><i class="fa-solid fa-pen"></i> Editar</button>` : ''}
+        ${puede(modulo, 'eliminar') ? `<button class="btn btn-sec !py-1 text-red-700" data-del="${f.id}" aria-label="Eliminar ${esc(f.nombre || f.identificador_atencion || f.correo || '')}"><i class="fa-solid fa-trash"></i> Eliminar</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table>`;
+    $('tabla').querySelectorAll('[data-ver]').forEach(b => b.addEventListener('click', () => detalle(b.dataset.ver)));
+    $('tabla').querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => formulario(b.dataset.edit)));
+    $('tabla').querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => eliminar(b.dataset.del, filas.find(f => String(f.id) === b.dataset.del))));
+    $('pag').innerHTML = `<span class="text-slate-600">${p.total} registro(s) · página ${p.page} de ${p.totalPages}</span>
+      <span class="flex gap-2"><button class="btn btn-sec" id="ant" ${p.page <= 1 ? 'disabled' : ''}>Anterior</button><button class="btn btn-sec" id="sig" ${p.page >= p.totalPages ? 'disabled' : ''}>Siguiente</button></span>`;
+    $('ant').addEventListener('click', () => { estadoLista.page -= 1; cargarFilas(); });
+    $('sig').addEventListener('click', () => { estadoLista.page += 1; cargarFilas(); });
+  }
+
+  async function exportar() {
+    const b = $('exportar'); b.disabled = true;
+    try {
+      const q = new URLSearchParams();
+      if (estadoLista.search) q.set('search', estadoLista.search);
+      if (estadoLista.estado) q.set('estado', estadoLista.estado);
+      const r = await fetch(`${API_URL}/${actual}/export?${q}`, { headers: { Authorization: `Bearer ${Sesion.token()}`, 'X-Delegacion': Sesion.delegacion() || '' } });
+      if (!r.ok) { const d = await r.json().catch(() => ({})); aviso(r.status === 404 ? 'info' : 'error', r.status === 404 ? 'Sin datos' : 'No se pudo exportar', d.message || 'Error del servidor.'); return; }
+      const blob = await r.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = `${actual}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+      toast('success', 'Archivo Excel generado');
+    } finally { b.disabled = false; }
+  }
+
+  async function eliminar(id, fila) {
+    const m = MODULOS[actual];
+    const nombre = fila.nombre || fila.identificador_atencion || fila.correo || `#${id}`;
+    const c = await Swal.fire({ icon: 'warning', title: `¿Eliminar ${m.singular}?`, text: nombre, showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar', confirmButtonColor: '#DB0032' });
+    if (!c.isConfirmed) return;
+    const r = await api(`/${actual}/${id}`, { method: 'DELETE' });
+    if (r.ok) { toast('success', 'Registro eliminado'); return cargarFilas(); }
+    if (r.status === 409 && r.data.puedeDesactivar) {
+      const d = await Swal.fire({ icon: 'info', title: 'No se puede eliminar', text: r.data.message, showCancelButton: true, confirmButtonText: 'Desactivar', cancelButtonText: 'Cancelar', confirmButtonColor: '#DB0032' });
+      if (d.isConfirmed) {
+        const inactivo = m.estados[1];
+        const u = await api(`/${actual}/${id}`, { method: 'PUT', body: { estado: inactivo } });
+        if (u.ok) { toast('success', 'Registro desactivado'); cargarFilas(); } else aviso('error', 'No se pudo desactivar', u.data.message);
+      }
+      return;
+    }
+    aviso(r.status === 403 ? 'warning' : 'error', 'No se pudo eliminar', r.data.message || 'Error del servidor.');
+  }
+
+  // ── Formularios ────────────────────────────────────────────────────────────
+  const cache = {};
+  async function lookup(nombre) {
+    if (nombre === 'delegaciones') return usuario.delegaciones.map(d => ({ id: d.id, nombre: `${d.codigo} · ${d.nombre}` }));
+    if (cache[nombre]) return cache[nombre];
+    const r = await api(`/lookup/${nombre}`);
+    if (r.ok) cache[nombre] = r.data.data;
+    return r.ok ? r.data.data : [];
+  }
+  const delegacionesPermitidas = () => usuario.delegaciones;
+
+  function matrizPermisos(valor) {
+    const mios = usuario.permisos || {};
+    const nombres = config.modulos;
+    const acciones = config.acciones;
+    return `<div class="overflow-x-auto border border-slate-200 rounded-lg"><table class="tabla w-full"><thead><tr><th>Módulo</th>${acciones.map(a => `<th class="text-center">${esc(a)}</th>`).join('')}</tr></thead><tbody>
+      ${Object.keys(nombres).map(mod => `<tr><td>${esc(nombres[mod])}</td>${acciones.map(a => {
+        const tengo = (mios[mod] || []).includes(a), marcado = (valor[mod] || []).includes(a);
+        return `<td class="text-center"><input type="checkbox" data-mod="${mod}" data-acc="${a}" ${marcado ? 'checked' : ''} ${tengo ? '' : 'disabled'} aria-label="${esc(nombres[mod])}: ${a}" ${tengo ? '' : 'title="No puedes otorgar un permiso que no tienes"'}></td>`;
+      }).join('')}</tr>`).join('')}</tbody></table></div>`;
+  }
+  function leerPermisos(raiz) {
+    const p = {};
+    raiz.querySelectorAll('input[data-mod]:checked').forEach(i => { (p[i.dataset.mod] = p[i.dataset.mod] || []).push(i.dataset.acc); });
+    return p;
+  }
+
+  async function formulario(id) {
+    const m = MODULOS[actual], modulo = actual;
+    let datos = {};
+    if (id) {
+      const r = await api(`/${modulo}/${id}`);
+      if (!r.ok) return aviso('error', 'No se pudo cargar', r.data.message || 'Error del servidor.');
+      datos = r.data.data;
+    }
+    if (modulo === 'roles') MODULOS.roles.campos.find(c => c.k === 'alcance').op = config.alcances;
+    let html = '';
+    for (const c of m.campos) {
+      const v = datos[c.k] !== undefined && datos[c.k] !== null ? datos[c.k] : (c.def !== undefined ? c.def : '');
+      const idc = 'f_' + c.k;
+      const lab = `<label for="${idc}" class="etiqueta">${esc(c.l)}${c.req ? ' *' : ''}</label>`;
+      if (c.t === 'sel') {
+        const ops = c.lookup ? (await lookup(c.lookup)).map(o => [o.id, o.nombre]) : c.op.map(o => [o, o]);
+        html += `<div>${lab}<select id="${idc}" class="campo"><option value="">Seleccione...</option>${ops.map(([val, txt]) => `<option value="${esc(val)}" ${String(val) === String(v) ? 'selected' : ''}>${esc(txt)}</option>`).join('')}</select><p class="error-campo" id="e_${c.k}"></p></div>`;
+      } else if (c.t === 'area') {
+        html += `<div>${lab}<textarea id="${idc}" class="campo" rows="3" maxlength="${c.max}">${esc(v)}</textarea><p class="error-campo" id="e_${c.k}"></p></div>`;
+      } else if (c.t === 'multi') {
+        const sel = new Set((datos.delegaciones || []).map(Number));
+        html += `<fieldset><legend class="etiqueta">${esc(c.l)}</legend><div class="grid grid-cols-1 sm:grid-cols-2 gap-1">${delegacionesPermitidas().map(d => `<label class="flex items-center gap-2 text-sm"><input type="checkbox" class="chk-del" value="${d.id}" ${sel.has(d.id) ? 'checked' : ''}> ${esc(d.codigo)} · ${esc(d.nombre)}</label>`).join('')}</div><p class="text-xs text-slate-500 mt-1">Solo puedes autorizar delegaciones que tú tienes autorizadas.</p></fieldset>`;
+      } else if (c.t === 'clave') {
+        html += `<div>${lab}<input id="${idc}" type="password" class="campo" autocomplete="new-password" maxlength="100" placeholder="${id ? 'Dejar vacío para no cambiarla' : 'Mínimo 8 caracteres, con letra y número'}"><p class="error-campo" id="e_${c.k}"></p></div>`;
+      } else if (c.t === 'permisos') {
+        html += `<div><span class="etiqueta">Permisos por módulo</span>${matrizPermisos(datos.permisos || {})}<p class="text-xs text-slate-500 mt-1">Solo puedes marcar permisos que tú tienes. Lo no marcado queda denegado.</p></div>`;
+      } else {
+        html += `<div>${lab}<input id="${idc}" type="${c.tipo || 'text'}" class="campo" maxlength="${c.max || 150}" value="${esc(v)}" ${c.ph ? `placeholder="${esc(c.ph)}"` : ''}><p class="error-campo" id="e_${c.k}"></p></div>`;
+      }
+    }
+
+    const res = await Swal.fire({
+      title: id ? `Editar ${m.singular}` : `Nuevo registro: ${m.singular}`,
+      html: `<form id="swal-form" class="text-left space-y-3" novalidate>${html}</form>`,
+      width: 640, showCancelButton: true, confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar', confirmButtonColor: '#DB0032', focusConfirm: false,
+      preConfirm: async () => {
+        const body = {}, errores = {};
+        for (const c of m.campos) {
+          if (c.t === 'multi') { body.delegaciones = [...document.querySelectorAll('.chk-del:checked')].map(i => Number(i.value)); continue; }
+          if (c.t === 'permisos') { body.permisos = leerPermisos($('swal-form')); continue; }
+          const el = $('f_' + c.k); let val = el.value.trim();
+          if (c.t === 'clave') { if (!val && id) continue; if (!val) { errores[c.k] = 'La contraseña es obligatoria.'; continue; } if (val.length < 8 || !/[A-Za-z]/.test(val) || !/\d/.test(val)) { errores[c.k] = 'Mínimo 8 caracteres, con al menos una letra y un número.'; continue; } body[c.k] = el.value; continue; }
+          if (c.req && !val) { errores[c.k] = 'Este campo es obligatorio.'; continue; }
+          if (c.tipo === 'email' && val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) { errores[c.k] = 'Ingresa un correo válido.'; continue; }
+          if (c.t === 'sel' && c.lookup) val = val ? Number(val) : '';
+          if (val !== '' || id) body[c.k] = val === '' ? null : val;
         }
-
-        function cambiarDelegacionActiva(nuevaDel) {
-            usuario.delegacion = nuevaDel;
-            document.getElementById('label-delegacion').innerText = `${nuevaDel}: Delegación Seleccionada`;
-            Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: `Delegación cambiada a ${nuevaDel}`, showConfirmButton: false, timer: 1500 });
+        document.querySelectorAll('.error-campo').forEach(e => { e.textContent = ''; });
+        document.querySelectorAll('.campo').forEach(e => e.classList.remove('invalido'));
+        if (Object.keys(errores).length) {
+          Object.entries(errores).forEach(([k, t]) => { $('e_' + k).textContent = t; $('f_' + k).classList.add('invalido'); });
+          Swal.showValidationMessage('Revisa los campos marcados.');
+          return false;
         }
-
-        function construirMenu() {
-            const cont = document.getElementById('menu-modulos');
-            let modulos = ['atenciones'];
-            const rol = (usuario.rol || '').toLowerCase();
-
-            if (['superadministrador', 'coordinador'].includes(rol)) {
-                modulos = ['atenciones', 'delegaciones', 'roles', 'usuarios', 'items-metas', 'tipos-atencion', 'sub-atenciones'];
-            } else if (rol === 'delegado municipal') {
-                modulos = ['atenciones', 'delegaciones', 'usuarios'];
-            }
-
-            cont.innerHTML = modulos.map(m => `<button onclick="cambiarModulo('${m}')" class="nav-btn bg-red-50 text-red-900 hover:bg-red-100 px-3 py-2 rounded-lg text-sm font-medium transition">${m.toUpperCase()}</button>`).join('');
+        if (modulo === 'usuarios' && body.delegaciones && body.id_delegacion_activa && !body.delegaciones.includes(Number(body.id_delegacion_activa))) {
+          body.delegaciones.push(Number(body.id_delegacion_activa));
         }
+        const r = id ? await api(`/${modulo}/${id}`, { method: 'PUT', body }) : await api(`/${modulo}`, { method: 'POST', body });
+        if (!r.ok) { Swal.showValidationMessage(r.data.message || 'No se pudo guardar.'); return false; }
+        return r.data;
+      }
+    });
+    if (res.isConfirmed) { toast('success', res.value.message || 'Guardado'); if (id === null) estadoLista.page = 1; cargarFilas(); }
+  }
 
-        function cambiarModulo(mod) {
-            moduloActual = mod;
-            paginaActual = 1;
-            document.getElementById('modulo-titulo').innerText = `Gestión de ${mod.toUpperCase()}`;
-            cargarDatos();
-        }
+  // ── Vista de consulta (Ver) ────────────────────────────────────────────────
+  async function detalle(id) {
+    const modulo = actual, m = MODULOS[modulo];
+    const r = await api(`/${modulo}/${id}`);
+    if (!r.ok) return aviso(r.status === 404 ? 'info' : 'error', 'No se pudo cargar', r.data.message || 'Error del servidor.');
+    const d = r.data.data;
+    const valor = (k, tipo) => {
+      const v = d[k];
+      if (tipo === 'fecha') return esc(fechaHora(v));
+      if (tipo === 'permisos') {
+        const p = v || {}, mods = Object.keys(p);
+        return mods.length ? `<ul class="list-disc pl-5">${mods.map(x => `<li>${esc(config.modulos[x] || x)}: ${esc(p[x].join(', '))}</li>`).join('')}</ul>` : 'Sin permisos';
+      }
+      if (tipo === 'delegaciones') {
+        const nombres = (v || []).map(i => { const x = usuario.delegaciones.find(z => z.id === i); return x ? `${x.codigo} · ${x.nombre}` : `#${i}`; });
+        return nombres.length ? esc(nombres.join(', ')) : '—';
+      }
+      return esc(v === null || v === undefined || v === '' ? '—' : v);
+    };
+    await Swal.fire({
+      title: `Detalle: ${m.singular}`,
+      html: `<dl class="text-left grid grid-cols-1 sm:grid-cols-3 gap-x-3 gap-y-2">${VER[modulo].map(([k, l, t]) => `<dt class="etiqueta sm:col-span-1 !mb-0">${esc(l)}</dt><dd class="sm:col-span-2 text-sm">${valor(k, t)}</dd>`).join('')}</dl>`,
+      width: 640, confirmButtonText: 'Cerrar', confirmButtonColor: '#DB0032'
+    });
+  }
 
-        function aplicarFiltros() {
-            busquedaActual = document.getElementById('filtro-busqueda').value;
-            estadoActual = document.getElementById('filtro-estado').value;
-            paginaActual = 1;
-            cargarDatos();
-        }
+  // ── Inicio: contexto del usuario y matriz de permisos de su rol ─────────────
+  function pantallaInicio() {
+    const act = usuario.delegacionActiva;
+    const nombres = config.modulos || {};
+    const acciones = config.acciones || [];
+    const plantilla = new Set(config.plantillas || []);
+    const si = '<span class="text-green-700" title="Permitido"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span class="sr-only">Sí</span></span>';
+    const no = '<span class="text-slate-400" title="No permitido"><i class="fa-solid fa-minus" aria-hidden="true"></i><span class="sr-only">No</span></span>';
+    $('contenido').innerHTML = `
+      <h1 class="text-xl font-bold mb-1"><i class="fa-solid fa-house text-red-700" aria-hidden="true"></i> Inicio</h1>
+      <p class="text-slate-600 mb-4">Bienvenido/a, <strong>${esc(usuario.nombre)}</strong>. Este es tu contexto de trabajo y lo que tu rol te permite hacer.</p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+        <div class="bg-white rounded-xl border border-slate-200 p-4"><div class="etiqueta">Rol</div><div class="font-semibold">${esc(usuario.rol)}</div><div class="text-xs text-slate-500">Alcance: ${esc(usuario.alcance)}</div></div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4"><div class="etiqueta">Delegación activa</div><div class="font-semibold"><i class="fa-solid fa-location-dot text-red-700" aria-hidden="true"></i> ${act ? esc(act.codigo + ' · ' + act.nombre) : 'Sin delegación'}</div><div class="text-xs text-slate-500">${usuario.delegaciones.length > 1 ? 'Puedes cambiarla desde la cabecera.' : 'Tu contexto es fijo.'}</div></div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4"><div class="etiqueta">Delegaciones autorizadas</div><div class="text-sm">${usuario.delegaciones.map(d => esc(d.codigo + ' · ' + d.nombre)).join('<br>') || '—'}</div></div>
+      </div>
+      <h2 class="font-bold mb-2">Permisos de tu rol por módulo</h2>
+      <div class="bg-white rounded-xl border border-slate-200 overflow-x-auto"><table class="tabla w-full">
+        <thead><tr><th scope="col">Módulo</th>${acciones.map(a => `<th scope="col" class="text-center">${esc(a)}</th>`).join('')}</tr></thead>
+        <tbody>${Object.keys(nombres).map(mod => `<tr><th scope="row" class="!bg-white !normal-case !text-slate-800 !text-sm font-semibold">${esc(nombres[mod])}${plantilla.has(mod) ? ' <span class="pastilla p-off">plantilla</span>' : ''}</th>${acciones.map(a => `<td class="text-center">${puede(mod, a) ? si : no}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+      <p class="text-xs text-slate-500 mt-2">El menú solo muestra los módulos con permiso de «ver». Los permisos se validan en el servidor en cada solicitud. Los módulos marcados como «plantilla» muestran datos ilustrativos y aún no tienen lógica.</p>`;
+  }
 
-        function cambiarPagina(delta) {
-            paginaActual += delta;
-            cargarDatos();
-        }
+  // ── Módulos pendientes: plantilla de interfaz (sin lógica ni persistencia) ──
+  function pantallaPlantilla(id) {
+    const t = PLANTILLAS[id];
+    const pendiente = () => Swal.fire({ icon: 'info', title: 'Función simulada', text: 'Este módulo es una plantilla de interfaz. Esta acción se habilitará cuando se implemente su lógica; por ahora no guarda datos.', confirmButtonText: 'Entendido', confirmButtonColor: '#DB0032' });
+    $('contenido').innerHTML = `
+      <div class="flex items-start gap-3 bg-amber-50 border border-amber-300 text-amber-900 rounded-lg px-4 py-3 mb-4" role="note">
+        <i class="fa-solid fa-triangle-exclamation mt-0.5" aria-hidden="true"></i>
+        <div><strong>Plantilla de interfaz · lógica pendiente.</strong> Los datos son ilustrativos y las acciones no guardan información.</div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 mb-1">
+        <h1 class="text-xl font-bold mr-auto"><i class="fa-solid ${t.icono} text-red-700" aria-hidden="true"></i> ${esc(t.titulo)}</h1>
+        <button class="btn btn-sec" data-pend><i class="fa-solid fa-file-excel text-green-700"></i> Exportar a Excel</button>
+        <button class="btn btn-primario" data-pend><i class="fa-solid fa-plus"></i> Nuevo registro</button>
+      </div>
+      <p class="text-slate-600 mb-3">${esc(t.texto)}</p>
+      <input class="campo !w-64 mb-3" placeholder="Buscar..." aria-label="Buscar (simulado)" data-pend readonly>
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto"><table class="tabla w-full">
+        <thead><tr>${t.cols.map(c => `<th scope="col">${esc(c)}</th>`).join('')}<th scope="col">Acciones</th></tr></thead>
+        <tbody>${t.filas.map(f => `<tr>${f.map(c => `<td>${esc(c)}</td>`).join('')}<td class="whitespace-nowrap"><button class="btn btn-sec !py-1" data-pend><i class="fa-regular fa-eye"></i> Ver</button> <button class="btn btn-sec !py-1" data-pend><i class="fa-solid fa-pen"></i> Editar</button></td></tr>`).join('')}</tbody></table></div>
+      <p class="text-xs text-slate-500 mt-2">Datos ilustrativos · Acciones sujetas al perfil (${esc(usuario.rol)}: solo consulta de esta plantilla).</p>`;
+    $('contenido').querySelectorAll('[data-pend]').forEach(el => { el.addEventListener('click', pendiente); });
+  }
 
-        async function cargarDatos() {
-            try {
-                const res = await fetch(`${API_URL}/${moduloActual}?page=${paginaActual}&limit=5&search=${encodeURIComponent(busquedaActual)}&estado=${encodeURIComponent(estadoActual)}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const json = await res.json();
-                const tbody = document.getElementById('tbody-datos');
-                tbody.innerHTML = '';
+  // ── Ingreso de atención ────────────────────────────────────────────────────
+  async function pantallaIngreso() {
+    const cont = $('contenido');
+    const act = usuario.delegacionActiva;
+    const tipos = await lookup('tipos');
+    cont.innerHTML = `
+      <h1 class="text-xl font-bold mb-4"><i class="fa-solid fa-pen-to-square text-red-700" aria-hidden="true"></i> Ingreso de atención</h1>
+      <form id="f-atencion" novalidate class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
+        <div class="md:col-span-2"><label for="a_solicitante" class="etiqueta">Vecino o solicitante *</label><input id="a_solicitante" class="campo" maxlength="150" autocomplete="off" placeholder="Nombre completo del solicitante"><p class="error-campo" id="ea_solicitante"></p></div>
+        <div><label for="a_tipo" class="etiqueta">Tipo de atención *</label><select id="a_tipo" class="campo"><option value="">Seleccione...</option>${tipos.map(t => `<option value="${t.id}">${esc(t.nombre)}</option>`).join('')}</select><p class="error-campo" id="ea_tipo"></p></div>
+        <div><label for="a_sub" class="etiqueta">Sub atención *</label><select id="a_sub" class="campo" disabled><option value="">Primero elija un tipo</option></select><p class="error-campo" id="ea_sub"></p></div>
+        <div class="md:col-span-2"><label for="a_desc" class="etiqueta">Descripción *</label><textarea id="a_desc" class="campo" rows="4" maxlength="2000"></textarea><p class="error-campo" id="ea_desc"></p></div>
+        <div><label class="etiqueta" for="a_del">Delegación</label><input id="a_del" class="campo" readonly value="${esc(act.codigo + ' · ' + act.nombre)}"></div>
+        <div><label class="etiqueta" for="a_resp">Responsable</label><input id="a_resp" class="campo" readonly value="${esc(usuario.nombre)}"></div>
+        <div><label class="etiqueta" for="a_fecha">Fecha de registro</label><input id="a_fecha" class="campo" readonly value="Se asigna automáticamente al guardar"></div>
+        <div><label class="etiqueta" for="a_ident">Identificador</label><input id="a_ident" class="campo" readonly value="Se genera al guardar"></div>
+        <div class="md:col-span-2 flex gap-2 justify-end"><button type="button" id="a_cancelar" class="btn btn-sec">Cancelar</button><button type="reset" id="a_limpiar" class="btn btn-sec">Limpiar</button><button type="submit" id="a_guardar" class="btn btn-primario"><i class="fa-solid fa-floppy-disk"></i> Guardar atención</button></div>
+      </form>`;
+    const f = $('f-atencion');
+    f.addEventListener('input', () => { sucio = true; });
+    f.addEventListener('reset', () => { sucio = false; $('a_sub').disabled = true; $('a_sub').innerHTML = '<option value="">Primero elija un tipo</option>'; document.querySelectorAll('.error-campo').forEach(e => { e.textContent = ''; }); });
 
-                if (json.pagination) {
-                    document.getElementById('total-resultados').innerText = `Total: ${json.pagination.total}`;
-                    document.getElementById('info-pagina').innerText = `Pág ${json.pagination.page} de ${json.pagination.totalPages || 1}`;
-                }
+    $('a_tipo').addEventListener('change', async e => {
+      const sub = $('a_sub');
+      sub.innerHTML = '<option value="">Cargando...</option>'; sub.disabled = true;
+      if (!e.target.value) { sub.innerHTML = '<option value="">Primero elija un tipo</option>'; return; }
+      const r = await api(`/lookup/subatenciones?tipo=${encodeURIComponent(e.target.value)}`);
+      const lista = r.ok ? r.data.data : [];
+      sub.innerHTML = lista.length ? '<option value="">Seleccione...</option>' + lista.map(s => `<option value="${s.id}">${esc(s.nombre)}</option>`).join('') : '<option value="">Este tipo no tiene sub atenciones activas</option>';
+      sub.disabled = !lista.length;
+    });
 
-                if (json.data && json.data.length > 0) {
-                    json.data.forEach(item => {
-                        tbody.innerHTML += `
-                            <tr class="border-b hover:bg-red-50/40">
-                                <td class="p-3 font-semibold text-red-900">${item.codigo_atencion || item.codigo || item.rut || item.id}</td>
-                                <td class="p-3">${item.ciudadano || item.nombre || item.periodo || 'N/A'}</td>
-                                <td class="p-3">${item.estado || 'Activo'}</td>
-                                <td class="p-3 text-center">
-                                    <button onclick="abrirEditar(${item.id})" class="bg-amber-100 text-amber-700 p-1.5 rounded text-xs mr-1"><i class="fa-solid fa-pen"></i></button>
-                                    <button onclick="eliminar(${item.id})" class="bg-red-100 text-red-700 p-1.5 rounded text-xs"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>`;
-                    });
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">No hay registros.</td></tr>`;
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
+    // Cancelar no crea ningún registro: descarta lo escrito y vuelve al listado (o al inicio).
+    $('a_cancelar').addEventListener('click', async () => {
+      if (sucio) {
+        const c = await Swal.fire({ icon: 'question', title: '¿Cancelar el ingreso?', text: 'Se descartará lo que escribiste. No se creará ningún registro.', showCancelButton: true, confirmButtonText: 'Sí, cancelar', cancelButtonText: 'Seguir editando', confirmButtonColor: '#DB0032' });
+        if (!c.isConfirmed) return;
+      }
+      sucio = false;
+      abrir(puede('atenciones', 'ver') ? 'atenciones' : 'inicio');
+    });
 
-        async function eliminar(id) {
-            const confirm = await Swal.fire({ title: '¿Estás seguro?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#C41230' });
-            if (!confirm.isConfirmed) return;
+    let enviando = false;
+    f.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (enviando) return;
+      const v = { solicitante: $('a_solicitante').value.trim(), tipo: $('a_tipo').value, sub: $('a_sub').value, desc: $('a_desc').value.trim() };
+      const err = {};
+      if (v.solicitante.length < 3) err.solicitante = 'Ingresa el nombre del solicitante (mínimo 3 caracteres).';
+      else if (!/^[\p{L} .'\-]+$/u.test(v.solicitante)) err.solicitante = 'Solo letras, espacios, punto, apóstrofo y guion.';
+      if (!v.tipo) err.tipo = 'Selecciona un tipo de atención.';
+      if (!v.sub) err.sub = 'Selecciona una sub atención.';
+      if (v.desc.length < 5) err.desc = 'Describe la atención (mínimo 5 caracteres).';
+      else if (/[<>]/.test(v.desc)) err.desc = 'La descripción no puede contener los símbolos < o >.';
+      ['solicitante', 'tipo', 'sub', 'desc'].forEach(k => { $('ea_' + k).textContent = err[k] || ''; $('a_' + k).classList.toggle('invalido', !!err[k]); });
+      if (Object.keys(err).length) { aviso('warning', 'Revisa el formulario', 'Hay campos obligatorios o con formato incorrecto.'); return; }
 
-            const res = await fetch(`${API_URL}/${moduloActual}/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const json = await res.json();
+      enviando = true; $('a_guardar').disabled = true;
+      const r = await api('/atenciones', { method: 'POST', body: { solicitante: v.solicitante, id_tipo: Number(v.tipo), id_sub_atencion: Number(v.sub), descripcion: v.desc } });
+      enviando = false; $('a_guardar').disabled = false;
+      if (!r.ok) { aviso(r.status === 403 ? 'warning' : 'error', 'No se pudo guardar', r.data.message || 'Error del servidor.'); return; }
+      sucio = false;
+      $('a_ident').value = r.data.identificador || '';
+      await Swal.fire({ icon: 'success', title: 'Atención registrada', html: `Identificador asignado:<br><strong style="font-size:1.4rem">${esc(r.data.identificador || '')}</strong>`, confirmButtonColor: '#DB0032' });
+      f.reset();
+      $('a_ident').value = `Último guardado: ${r.data.identificador || ''}`;
+    });
+  }
 
-            // CORRECCIÓN CRÍTICA: Nunca mostrar éxito si la operación falla
-            if (!res.ok) {
-                return Swal.fire('No se pudo eliminar', json.message || 'Error en el servidor', 'error');
-            }
-
-            Swal.fire('Eliminado', json.message, 'success');
-            cargarDatos();
-        }
-
-        function abrirModalCrear() {
-            document.getElementById('edit-id').value = '';
-            document.getElementById('modal-titulo').innerText = 'Nuevo Registro';
-            document.getElementById('modal-inputs').innerHTML = `<div><label class="block text-xs font-semibold">Nombre / Ciudadano</label><input type="text" id="f-nombre" required class="w-full border p-2 rounded"></div>`;
-            document.getElementById('modal-crear').classList.remove('hidden');
-        }
-
-        async function guardarRegistro(e) {
-            e.preventDefault();
-            const id = document.getElementById('edit-id').value;
-            const bodyData = { nombre: document.getElementById('f-nombre').value, estado: 'Activo' };
-
-            const res = await fetch(`${API_URL}/${moduloActual}${id ? '/' + id : ''}`, {
-                method: id ? 'PUT' : 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(bodyData)
-            });
-            const json = await res.json();
-
-            // Validación estricta anti-falsos éxitos
-            if (!res.ok) {
-                return Swal.fire('Error al guardar', json.message || 'No se pudo completar la operación', 'error');
-            }
-
-            document.getElementById('modal-crear').classList.add('hidden');
-            Swal.fire('¡Éxito!', json.message, 'success');
-            cargarDatos();
-        }
-
-        function cerrarModal() { document.getElementById('modal-crear').classList.add('hidden'); }
-        function cerrarSesion() { localStorage.clear(); window.location.href = 'index.html'; }
-        function exportarExcel() { window.location.href = `${API_URL}/${moduloActual}/export?token=${token}`; }
-    </script>
+  // ── Inicio ─────────────────────────────────────────────────────────────────
+  (async function iniciar() {
+    // Se refresca el contexto desde el servidor: los permisos pueden haber cambiado desde el login.
+    const me = await api('/auth/me');
+    if (me.ok) { usuario = me.data.user; Sesion.actualizarUsuario(usuario); if (usuario.delegacionActiva) Sesion.fijarDelegacion(usuario.delegacionActiva.id); }
+    else if (me.status === 403) { Sesion.cerrar(); await aviso('error', 'Acceso denegado', me.data.message); window.location.replace('/'); return; }
+    const c = await api('/lookup/config');
+    if (c.ok) config = c.data;
+    pintarCabecera(); pintarMenu();
+    abrir(primero());
+  })();
+  window.addEventListener('beforeunload', e => { if (sucio) { e.preventDefault(); e.returnValue = ''; } });
+  </script>
 </body>
 </html>

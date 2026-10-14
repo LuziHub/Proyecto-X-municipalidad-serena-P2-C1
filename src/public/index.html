@@ -1,524 +1,85 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SGR - Sistema de Gestión y Registro | Municipalidad de La Serena</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .bg-faro-login {
-            background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), url('/assets/faro%20login.jpg');
-            background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;
-        }
-        .bg-muni-red { background-color: #C41230; }
-        .text-muni-red { color: #C41230; }
-        .border-muni-red { border-color: #C41230; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SGR - Sistema de Gestión y Registro | Municipalidad de La Serena</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/sgr.css">
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
-
-    <!-- Header Institucional -->
-    <header class="bg-muni-red text-white shadow-md border-b-4 border-amber-500">
-        <div class="max-w-7xl mx-auto px-4 py-2.5 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="bg-white px-3 py-1.5 rounded-lg shadow-sm flex items-center">
-                    <img src="/assets/horizontal-color.png" alt="Municipalidad de La Serena" class="h-9 md:h-10 w-auto object-contain" onError="this.onerror=null; this.src='/assets/horizontal-color.svg';">
-                </div>
-                <div class="border-l border-white/30 pl-3">
-                    <p class="text-xs text-red-100 font-medium">Sistema de Gestión y Registro (SGR)</p>
-                </div>
-            </div>
-            <div id="user-info" class="hidden flex items-center space-x-4">
-                <span id="nav-username" class="text-sm font-medium bg-red-950/40 px-3 py-1 rounded-full border border-red-400/30"></span>
-                <button onclick="cerrarSesion()" class="bg-slate-900/80 hover:bg-slate-900 text-white px-3 py-1.5 rounded text-sm transition">
-                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Salir
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 flex items-center justify-center">
-
-        <!-- VISTA 1: LOGIN -->
-        <section id="view-login" class="max-w-md w-full bg-[#D60029] text-white rounded-2xl shadow-2xl border border-red-400/30 p-8 my-auto">
-            <div class="text-center mb-6">
-                <img src="/assets/logo%20tinta.png" alt="Escudo La Serena" class="h-28 w-auto mx-auto object-contain drop-shadow scale-125" onError="this.onerror=null; this.src='/assets/logo-tinta.png';">
-                <h2 class="text-2xl font-bold text-white tracking-wide mt-2">Acceso Institucional</h2>
-                <p class="text-xs text-red-100/90 mt-1">Ingrese sus credenciales del sistema SGR</p>
-            </div>
-            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-red-100 mb-1">Correo Institucional</label>
-                    <input type="email" id="login-correo" placeholder="usuario@laserena.cl" required class="w-full px-3.5 py-2.5 bg-white text-slate-800 rounded-lg outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-red-100 mb-1">Contraseña</label>
-                    <input type="password" id="login-password" placeholder="••••••••" required class="w-full px-3.5 py-2.5 bg-white text-slate-800 rounded-lg outline-none">
-                </div>
-                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-950 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-right-to-bracket"></i> Ingresar al Sistema
-                </button>
-                <div class="text-center mt-3">
-                    <a href="#" onclick="mostrarVistaRecuperacion()" class="text-xs text-red-100 underline hover:text-white">¿Olvidó su contraseña?</a>
-                </div>
-            </form>
-        </section>
-
-        <!-- VISTA RECUPERACIÓN DE CONTRASEÑA -->
-        <section id="view-recovery" class="hidden max-w-md w-full bg-white text-slate-800 rounded-2xl shadow-2xl border p-8 my-auto">
-            <h2 class="text-xl font-bold text-slate-900 mb-2">Recuperar Contraseña</h2>
-            
-            <!-- Paso 1: Pedir Correo -->
-            <div id="step-1-email" class="space-y-3">
-                <p class="text-xs text-slate-500">Ingrese su correo institucional para recibir un código de verificación de 6 dígitos.</p>
-                <input type="email" id="rec-correo" placeholder="usuario@laserena.cl" class="w-full border p-2.5 rounded-lg text-sm">
-                <button onclick="solicitarCodigo()" class="w-full bg-muni-red text-white py-2 rounded-lg font-semibold text-sm">Enviar Código</button>
-            </div>
-
-            <!-- Paso 2: Validar Código de 6 dígitos -->
-            <div id="step-2-code" class="hidden space-y-3">
-                <p class="text-xs text-slate-500">Ingrese el código de 6 dígitos enviado a su correo y su nueva contraseña.</p>
-                <div>
-                    <label class="block text-xs font-semibold mb-1">Código de verificación (6 dígitos):</label>
-                    <input type="text" id="rec-codigo" maxlength="6" placeholder="123456" class="w-full border p-2.5 rounded-lg text-center tracking-widest text-lg font-bold">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1">Nueva Contraseña:</label>
-                    <input type="password" id="rec-newpassword" placeholder="Mínimo 8 caracteres, 1 letra y 1 número" class="w-full border p-2.5 rounded-lg text-sm">
-                    <p class="text-[10px] text-slate-400 mt-1">Requisitos: Mínimo 8 caracteres, al menos una letra y un número.</p>
-                </div>
-                <button onclick="verificarYCambiar()" class="w-full bg-muni-red text-white py-2 rounded-lg font-semibold text-sm">Actualizar Contraseña</button>
-            </div>
-
-            <div class="text-center mt-4">
-                <a href="#" onclick="volverLogin()" class="text-xs text-muni-red underline">Volver al Login</a>
-            </div>
-        </section>
-
-        <!-- VISTA 2: PANEL DE CONTROL (DASHBOARD) -->
-        <section id="view-dashboard" class="hidden space-y-6 w-full">
-            <!-- Menú de módulos dibujado dinámicamente según rol -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-red-100 flex flex-wrap gap-2 items-center justify-between">
-                <div id="menu-modulos" class="flex flex-wrap gap-2">
-                    <!-- Inyectado por JavaScript según permisos -->
-                </div>
-            </div>
-
-            <!-- Contenido Principal del Módulo -->
-            <div class="bg-white rounded-xl shadow-sm border border-red-100 p-6 space-y-4">
-                <div class="flex flex-wrap justify-between items-center gap-4">
-                    <h3 id="modulo-titulo" class="text-xl font-bold text-slate-900 border-l-4 border-muni-red pl-3">Gestión</h3>
-                    <div class="flex gap-2">
-                        <button onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-medium"><i class="fa-solid fa-file-excel mr-1"></i> Exportar a Excel</button>
-                        <button id="btn-nuevo-registro" onclick="abrirModalCrear()" class="bg-muni-red hover:bg-red-800 text-white px-3 py-2 rounded-lg text-sm font-medium"><i class="fa-solid fa-plus mr-1"></i> Nuevo Registro</button>
-                    </div>
-                </div>
-
-                <!-- Búsqueda y Filtros -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <input type="text" id="filtro-busqueda" oninput="aplicarFiltros()" placeholder="Buscar (sin distinguir mayúsculas)..." class="p-2 border rounded-lg text-sm w-full">
-                    <select id="filtro-estado" onchange="aplicarFiltros()" class="p-2 border rounded-lg text-sm w-full">
-                        <option value="">-- Todos los Estados --</option>
-                        <option value="Activo">Activo</option>
-                        <option value="Inactivo">Inactivo</option>
-                        <option value="Registrado">Registrado</option>
-                    </select>
-                    <div class="text-right text-xs text-slate-500 self-center font-semibold" id="total-resultados">Total: 0 registros</div>
-                </div>
-
-                <!-- Tabla de Datos -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse" id="tabla-datos">
-                        <thead>
-                            <tr class="bg-red-50 text-red-900 uppercase text-xs font-semibold">
-                                <th class="p-3">Código / ID</th>
-                                <th class="p-3">Nombre / Principal</th>
-                                <th class="p-3">Estado</th>
-                                <th class="p-3 text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-datos" class="divide-y divide-slate-100 text-sm"></tbody>
-                    </table>
-                </div>
-
-                <!-- Paginador -->
-                <div class="flex justify-between items-center pt-3 border-t text-sm">
-                    <button id="btn-prev" onclick="cambiarPagina(-1)" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200">Anterior</button>
-                    <span id="info-pagina" class="text-xs text-slate-600">Página 1 de 1</span>
-                    <button id="btn-next" onclick="cambiarPagina(1)" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200">Siguiente</button>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Modal Formulario (Crear/Editar) -->
-    <div id="modal-crear" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 border-t-4 border-muni-red">
-            <h3 id="modal-titulo" class="text-lg font-bold text-slate-900 mb-4">Agregar Registro</h3>
-            <form id="form-crear" onsubmit="guardarRegistro(event)" class="space-y-3">
-                <input type="hidden" id="edit-id">
-                <div id="modal-inputs" class="space-y-3"></div>
-                <div class="flex justify-end space-x-2 pt-3 border-t">
-                    <button type="button" onclick="cerrarModalCrear()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-muni-red text-white rounded-lg text-sm">Guardar</button>
-                </div>
-            </form>
-        </div>
+<body class="bg-faro-login font-sans text-slate-800 min-h-screen flex flex-col">
+  <header class="bg-muni-red text-white shadow-md border-b-4 border-amber-500">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center space-x-3">
+      <div class="bg-white px-3 py-1.5 rounded-lg shadow-sm flex items-center">
+        <img src="/assets/horizontal-color.png" alt="Municipalidad de La Serena" class="h-9 md:h-10 w-auto object-contain" onerror="this.onerror=null;this.src='/assets/horizontal-color.svg';">
+      </div>
+      <div class="border-l border-white/30 pl-3"><p class="text-xs text-red-100 font-medium">Sistema de Gestión y Registro (SGR)</p></div>
     </div>
+  </header>
 
-    <!-- Modal Ver Detalle -->
-    <div id="modal-detalle" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 border-t-4 border-slate-800">
-            <h3 class="text-lg font-bold text-slate-900 mb-2">Detalle Completo del Registro</h3>
-            <div id="detalle-contenido" class="space-y-2 text-sm bg-slate-50 p-4 rounded-lg border text-slate-700"></div>
-            <div class="flex justify-end pt-4">
-                <button type="button" onclick="cerrarModalDetalle()" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm">Cerrar</button>
-            </div>
+  <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 flex items-center justify-center">
+    <section class="max-w-md w-full bg-[#DB0032] text-white rounded-2xl shadow-2xl border border-red-400/30 p-8 my-auto" aria-labelledby="titulo">
+      <div class="text-center mb-6">
+        <img src="/assets/logo%20tinta.png" alt="Escudo de La Serena" class="h-28 w-auto mx-auto object-contain drop-shadow scale-125" onerror="this.onerror=null;this.src='/assets/logo-tinta.png';">
+        <h1 id="titulo" class="text-2xl font-bold tracking-wide mt-2">Acceso Institucional</h1>
+        <p class="text-xs text-red-100/90 mt-1">Ingrese sus credenciales del sistema SGR</p>
+      </div>
+      <form id="form-login" novalidate class="space-y-4">
+        <div>
+          <label for="correo" class="block text-xs font-semibold uppercase text-red-100 mb-1">Correo institucional o RUT</label>
+          <input type="text" id="correo" class="campo" placeholder="usuario@laserena.cl" autocomplete="username" maxlength="150">
         </div>
-    </div>
+        <div>
+          <label for="password" class="block text-xs font-semibold uppercase text-red-100 mb-1">Contraseña</label>
+          <div class="relative">
+            <input type="password" id="password" class="campo pr-10" placeholder="••••••••" autocomplete="current-password" maxlength="100">
+            <button type="button" id="ver" class="absolute inset-y-0 right-0 px-3 text-slate-500" aria-label="Mostrar u ocultar contraseña"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+        <button id="btn-login" type="submit" class="w-full bg-slate-900 hover:bg-slate-950 disabled:opacity-60 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i> <span>Ingresar al sistema</span>
+        </button>
+        <div class="text-center"><a href="/recovery" class="text-xs text-red-100 underline hover:text-white">¿Olvidó su contraseña?</a></div>
+      </form>
+    </section>
+  </main>
 
-    <!-- Script General y Lógica Frontend -->
-    <script>
-        let moduloActual = 'atenciones';
-        let paginaActual = 1;
-        let busquedaActual = '';
-        let estadoActual = '';
-        let tokenJwt = '';
-        let rolUsuario = '';
-        const API_URL = 'http://localhost:3000/api';
+  <script src="/sgr.js"></script>
+  <script>
+    if (Sesion.token()) window.location.replace('/dashboard');
 
-        document.addEventListener("DOMContentLoaded", () => {
-            document.body.classList.add('bg-faro-login');
-        });
+    const $ = id => document.getElementById(id);
+    $('ver').addEventListener('click', () => {
+      const campo = $('password');
+      campo.type = campo.type === 'password' ? 'text' : 'password';
+    });
 
-        function mostrarVistaRecuperacion() {
-            document.getElementById('view-login').classList.add('hidden');
-            document.getElementById('view-recovery').classList.remove('hidden');
-        }
-
-        function volverLogin() {
-            document.getElementById('view-recovery').classList.add('hidden');
-            document.getElementById('view-login').classList.remove('hidden');
-        }
-
-        async function solicitarCodigo() {
-            const correo = document.getElementById('rec-correo').value.trim();
-            if (!correo) return Swal.fire('Error', 'Ingrese su correo', 'error');
-
-            const res = await fetch(`${API_URL}/auth/forgot-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ correo })
-            });
-            const data = await res.json();
-            Swal.fire('Información', data.message, 'info');
-            document.getElementById('step-1-email').classList.add('hidden');
-            document.getElementById('step-2-code').classList.remove('hidden');
-        }
-
-        async function verificarYCambiar() {
-            const correo = document.getElementById('rec-correo').value.trim();
-            const codigo = document.getElementById('rec-codigo').value.trim();
-            const nuevaPassword = document.getElementById('rec-newpassword').value;
-
-            const res = await fetch(`${API_URL}/auth/reset-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ correo, codigo, nuevaPassword })
-            });
-            const data = await res.json();
-
-            if (res.ok) {
-                Swal.fire('¡Éxito!', data.message, 'success');
-                volverLogin();
-            } else {
-                Swal.fire('Error', data.message, 'error');
-            }
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const correo = document.getElementById('login-correo').value.trim();
-            const password = document.getElementById('login-password').value;
-
-            try {
-                const res = await fetch(`${API_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ correo, password })
-                });
-                const data = await res.json();
-
-                if (res.ok) {
-                    tokenJwt = data.token;
-                    rolUsuario = (data.user.rol || 'funcionario').toLowerCase();
-
-                    document.getElementById('view-login').classList.add('hidden');
-                    document.getElementById('view-dashboard').classList.remove('hidden');
-                    document.getElementById('user-info').classList.remove('hidden');
-                    document.getElementById('nav-username').innerText = `${data.user.nombre} (${data.user.rol})`;
-                    document.body.classList.remove('bg-faro-login');
-                    
-                    construirMenuRoles();
-                    cargarDatosModulo();
-                } else {
-                    Swal.fire('Error', data.message, 'error');
-                }
-            } catch (err) {
-                Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
-            }
-        }
-
-        function construirMenuRoles() {
-            const contenedor = document.getElementById('menu-modulos');
-            contenedor.innerHTML = '';
-
-            let modulosPermitidos = ['atenciones'];
-            if (['superadministrador', 'coordinador'].includes(rolUsuario)) {
-                modulosPermitidos = ['atenciones', 'delegaciones', 'roles', 'usuarios', 'items-metas', 'tipos-atencion', 'sub-atenciones'];
-            } else if (rolUsuario === 'delegado municipal') {
-                modulosPermitidos = ['atenciones', 'delegaciones', 'usuarios'];
-            }
-
-            modulosPermitidos.forEach(mod => {
-                contenedor.innerHTML += `<button onclick="cambiarModulo('${mod}')" class="nav-btn bg-red-50 text-red-900 hover:bg-red-100 px-3 py-2 rounded-lg text-sm font-medium transition">${mod.toUpperCase()}</button>`;
-            });
-        }
-
-        function cerrarSesion() {
-            tokenJwt = '';
-            document.getElementById('view-dashboard').classList.add('hidden');
-            document.getElementById('user-info').classList.add('hidden');
-            document.getElementById('view-login').classList.remove('hidden');
-            document.body.classList.add('bg-faro-login');
-        }
-
-        function cambiarModulo(modulo) {
-            moduloActual = modulo;
-            paginaActual = 1;
-            document.getElementById('filtro-busqueda').value = '';
-            document.getElementById('filtro-estado').value = '';
-            busquedaActual = '';
-            estadoActual = '';
-            document.getElementById('modulo-titulo').innerText = `Gestión de ${modulo.toUpperCase()}`;
-            cargarDatosModulo();
-        }
-
-        function aplicarFiltros() {
-            busquedaActual = document.getElementById('filtro-busqueda').value;
-            estadoActual = document.getElementById('filtro-estado').value;
-            paginaActual = 1;
-            cargarDatosModulo();
-        }
-
-        function cambiarPagina(delta) {
-            paginaActual += delta;
-            cargarDatosModulo();
-        }
-
-        async function cargarDatosModulo() {
-            try {
-                const url = `${API_URL}/${moduloActual}?page=${paginaActual}&limit=5&search=${encodeURIComponent(busquedaActual)}&estado=${encodeURIComponent(estadoActual)}`;
-                const res = await fetch(url, {
-                    headers: { 'Authorization': `Bearer ${tokenJwt}` }
-                });
-                const json = await res.json();
-                const tbody = document.getElementById('tbody-datos');
-                tbody.innerHTML = '';
-
-                if (json.pagination) {
-                    document.getElementById('total-resultados').innerText = `Total: ${json.pagination.total} registros`;
-                    document.getElementById('info-pagina').innerText = `Página ${json.pagination.page} de ${json.pagination.totalPages || 1}`;
-                    document.getElementById('btn-prev').disabled = json.pagination.page <= 1;
-                    document.getElementById('btn-next').disabled = json.pagination.page >= json.pagination.totalPages;
-                }
-
-                if (json.data && json.data.length > 0) {
-                    json.data.forEach(item => {
-                        let tr = document.createElement('tr');
-                        tr.className = 'hover:bg-red-50/40 border-b border-slate-100 transition';
-                        tr.innerHTML = `
-                            <td class="p-3 font-semibold text-red-900">${item.codigo_atencion || item.codigo || item.rut || item.id}</td>
-                            <td class="p-3">${item.ciudadano || item.nombre || item.periodo || 'N/A'}</td>
-                            <td class="p-3"><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${item.estado === 'Inactivo' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}">${item.estado || 'Activo'}</span></td>
-                            <td class="p-3 text-center space-x-1">
-                                <button onclick="verDetalle(${item.id})" class="bg-blue-100 text-blue-700 hover:bg-blue-200 p-1.5 rounded text-xs" title="Ver Detalle"><i class="fa-solid fa-eye"></i></button>
-                                <button onclick="abrirModalEditar(${item.id})" class="bg-amber-100 text-amber-700 hover:bg-amber-200 p-1.5 rounded text-xs" title="Editar"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="eliminarRegistro(${item.id})" class="bg-red-100 text-red-700 hover:bg-red-200 p-1.5 rounded text-xs" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">No se encontraron registros.</td></tr>`;
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        async function verDetalle(id) {
-            const res = await fetch(`${API_URL}/${moduloActual}/${id}`, {
-                headers: { 'Authorization': `Bearer ${tokenJwt}` }
-            });
-            const json = await res.json();
-            const cont = document.getElementById('detalle-contenido');
-            cont.innerHTML = '';
-            for (const [k, v] of Object.entries(json.data)) {
-                cont.innerHTML += `<p><strong class="uppercase text-xs text-slate-500">${k}:</strong> ${v !== null ? v : '-'}</p>`;
-            }
-            document.getElementById('modal-detalle').classList.remove('hidden');
-        }
-
-        function cerrarModalDetalle() {
-            document.getElementById('modal-detalle').classList.add('hidden');
-        }
-
-        function exportarExcel() {
-            window.location.href = `${API_URL}/${moduloActual}/export?token=${tokenJwt}`;
-        }
-
-        function abrirModalCrear() {
-            document.getElementById('edit-id').value = '';
-            document.getElementById('modal-titulo').innerText = 'Agregar Registro';
-            generarInputsFormulario({});
-            document.getElementById('modal-crear').classList.remove('hidden');
-        }
-
-        async function abrirModalEditar(id) {
-            const res = await fetch(`${API_URL}/${moduloActual}/${id}`, {
-                headers: { 'Authorization': `Bearer ${tokenJwt}` }
-            });
-            const json = await res.json();
-            document.getElementById('edit-id').value = id;
-            document.getElementById('modal-titulo').innerText = 'Editar Registro';
-            generarInputsFormulario(json.data);
-            document.getElementById('modal-crear').classList.remove('hidden');
-        }
-
-        function generarInputsFormulario(data) {
-            const container = document.getElementById('modal-inputs');
-            container.innerHTML = '';
-
-            if (moduloActual === 'atenciones') {
-                container.innerHTML = `
-                    <div><label class="block text-xs font-semibold">Ciudadano</label><input type="text" id="f-ciudadano" value="${data.ciudadano || ''}" required class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-xs font-semibold">Tipo</label><input type="text" id="f-tipo" value="${data.tipo || ''}" required class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-xs font-semibold">Dirección</label><input type="text" id="f-direccion" value="${data.direccion || ''}" class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-xs font-semibold">Comuna</label><input type="text" id="f-comuna" value="${data.comuna || 'La Serena'}" class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-xs font-semibold">Detalle</label><textarea id="f-detalle" class="w-full border p-2 rounded">${data.detalle || ''}</textarea></div>
-                    <div><label class="block text-xs font-semibold">Estado</label><select id="f-estado" class="w-full border p-2 rounded"><option ${data.estado==='Activo'?'selected':''}>Activo</option><option ${data.estado==='Inactivo'?'selected':''}>Inactivo</option></select></div>
-                `;
-            } else if (moduloActual === 'usuarios') {
-                container.innerHTML = `
-                    <div><label class="block text-xs font-semibold">RUT</label><input type="text" id="f-rut" value="${data.rut || ''}" required class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-xs font-semibold">Nombre</label><input type="text" id="f-nombre" value="${data.nombre || ''}" required class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-xs font-semibold">Correo</label><input type="email" id="f-correo" value="${data.correo || ''}" class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-xs font-semibold">Rol</label><input type="text" id="f-rol" value="${data.rol || 'Operador'}" class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-xs font-semibold">Delegación</label><input type="text" id="f-delegacion" value="${data.delegacion || 'DEL-01'}" class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-xs font-semibold">Estado</label><select id="f-estado" class="w-full border p-2 rounded"><option ${data.estado==='Activo'?'selected':''}>Activo</option><option ${data.estado==='Inactivo'?'selected':''}>Inactivo</option></select></div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <div><label class="block text-xs font-semibold">Nombre / Código</label><input type="text" id="f-nombre" value="${data.nombre || data.codigo || data.periodo || ''}" required class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-xs font-semibold">Descripción / Detalle</label><input type="text" id="f-descripcion" value="${data.descripcion || data.detalle || ''}" class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-xs font-semibold">Estado</label><select id="f-estado" class="w-full border p-2 rounded"><option ${data.estado==='Activo'?'selected':''}>Activo</option><option ${data.estado==='Inactivo'?'selected':''}>Inactivo</option></select></div>
-                `;
-            }
-        }
-
-        function cerrarModalCrear() {
-            document.getElementById('modal-crear').classList.add('hidden');
-        }
-
-        async function guardarRegistro(e) {
-            e.preventDefault();
-            const id = document.getElementById('edit-id').value;
-            let bodyData = {};
-
-            if (moduloActual === 'atenciones') {
-                bodyData = {
-                    ciudadano: document.getElementById('f-ciudadano').value,
-                    tipo: document.getElementById('f-tipo').value,
-                    direccion: document.getElementById('f-direccion').value,
-                    comuna: document.getElementById('f-comuna').value,
-                    detalle: document.getElementById('f-detalle').value,
-                    estado: document.getElementById('f-estado').value
-                };
-            } else if (moduloActual === 'usuarios') {
-                bodyData = {
-                    rut: document.getElementById('f-rut').value,
-                    nombre: document.getElementById('f-nombre').value,
-                    correo: document.getElementById('f-correo').value,
-                    rol: document.getElementById('f-rol').value,
-                    delegacion: document.getElementById('f-delegacion').value,
-                    estado: document.getElementById('f-estado').value
-                };
-            } else {
-                bodyData = {
-                    nombre: document.getElementById('f-nombre').value,
-                    descripcion: document.getElementById('f-descripcion').value,
-                    estado: document.getElementById('f-estado').value
-                };
-            }
-
-            const method = id ? 'PUT' : 'POST';
-            const url = id ? `${API_URL}/${moduloActual}/${id}` : `${API_URL}/${moduloActual}`;
-
-            try {
-                const res = await fetch(url, {
-                    method,
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${tokenJwt}`
-                    },
-                    body: JSON.stringify(bodyData)
-                });
-                const json = await res.json();
-                if (res.ok) {
-                    cerrarModalCrear();
-                    Swal.fire('¡Éxito!', 'Registro guardado.', 'success');
-                    cargarDatosModulo();
-                } else {
-                    Swal.fire('Error', json.message, 'error');
-                }
-            } catch (err) {
-                Swal.fire('Error', 'No se pudo guardar el registro.', 'error');
-            }
-        }
-
-        async function eliminarRegistro(id) {
-            const confirm = await Swal.fire({
-                title: '¿Estás seguro?',
-                text: "Esta acción eliminará el registro de la base de datos.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#C41230',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sí, eliminar'
-            });
-
-            if (confirm.isConfirmed) {
-                try {
-                    const res = await fetch(`${API_URL}/${moduloActual}/${id}`, { 
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${tokenJwt}` }
-                    });
-                    const json = await res.json();
-                    if (res.ok) {
-                        Swal.fire('Eliminado', json.message, 'success');
-                        cargarDatosModulo();
-                    } else {
-                        Swal.fire('Atención', json.message, 'warning');
-                    }
-                } catch (err) {
-                    Swal.fire('Error', 'No se pudo eliminar el registro.', 'error');
-                }
-            }
-        }
-    </script>
+    $('form-login').addEventListener('submit', async e => {
+      e.preventDefault();
+      const correo = $('correo').value.trim();
+      const password = $('password').value;
+      if (!correo || !password) {
+        aviso('warning', 'Campos obligatorios', 'Ingrese su correo (o RUT) y su contraseña.');
+        return;
+      }
+      const boton = $('btn-login');
+      boton.disabled = true;
+      boton.querySelector('span').textContent = 'Verificando...';
+      const r = await api('/auth/login', { method: 'POST', body: { correo, password }, sinRedirigir: true });
+      boton.disabled = false;
+      boton.querySelector('span').textContent = 'Ingresar al sistema';
+      if (!r.ok) {
+        aviso(r.status === 429 ? 'warning' : 'error', 'No se pudo ingresar', r.data.message || 'Error del servidor.');
+        return;
+      }
+      if (!Sesion.guardar(r.data.token, r.data.user)) {
+        aviso('error', 'Sesión no disponible', 'El navegador no permite guardar la sesión. Desactive el modo privado estricto e inténtelo de nuevo.');
+        return;
+      }
+      window.location.href = '/dashboard';
+    });
+  </script>
 </body>
 </html>
