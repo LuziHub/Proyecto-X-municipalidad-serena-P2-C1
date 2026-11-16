@@ -1,4 +1,22 @@
+# Dependencias
 node_modules/
+
+# Secretos y configuración local (nunca subir)
 .env
+.env.*
+!.env.example
+
+# Sistema operativo
 .DS_Store
+Thumbs.db
+
+# Descargas y resultados generados
 downloads/
+resultados-estres-*.csv
+*.log
+
+# Planillas: pueden traer datos reales de personas (JJVV, matriz, etc.)
+*.xlsx
+*.xls
+# Excepción: el plan de pruebas del proyecto sí se sube
+!docs/Plan_y_registro_de_pruebas_SGR.xlsx

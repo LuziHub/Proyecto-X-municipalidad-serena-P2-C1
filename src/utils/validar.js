@@ -1,6 +1,7 @@
 'use strict';
 
 const { validarPermisos } = require('../config/permisos');
+const { esFechaValida } = require('./fechas');
 
 const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -47,6 +48,14 @@ function validarCampos(campos, body, { parcial = false } = {}) {
     }
 
     if (v !== null && typeof v === 'object') { errores.push(`${etiqueta} no es válido.`); continue; }
+    // Casillas (sí/no): aceptan true/false, 1/0 y "sí"/"no"; se guardan como 1/0. Si no vienen, valen 0.
+    if (c.tipo === 'bool') {
+      const t = String(v === null ? '' : v).trim().toLowerCase();
+      if (['true', '1', 'si', 'sí'].includes(t)) valores[c.col] = 1;
+      else if (['false', '0', 'no', ''].includes(t)) valores[c.col] = 0;
+      else errores.push(`${etiqueta} no es válido.`);
+      continue;
+    }
     v = v === null ? '' : String(v).trim();
 
     if (v === '') {
@@ -58,7 +67,7 @@ function validarCampos(campos, body, { parcial = false } = {}) {
     switch (c.tipo) {
       case 'entero': {
         const n = Number(v);
-        if (!Number.isInteger(n) || n < (c.minimo ?? 1)) errores.push(`${etiqueta} no es válido.`);
+        if (!Number.isInteger(n) || n < (c.minimo ?? 1) || n > (c.maximo ?? Number.MAX_SAFE_INTEGER)) errores.push(`${etiqueta} no es válido.`);
         else valores[c.col] = n;
         break;
       }
@@ -68,6 +77,21 @@ function validarCampos(campos, body, { parcial = false } = {}) {
         else valores[c.col] = hallada;
         break;
       }
+      case 'decimal': {
+        const n = Number(v.replace(',', '.'));
+        if (!Number.isFinite(n) || n < (c.minimo ?? -1e9) || n > (c.maximo ?? 1e9)) {
+          errores.push(`${etiqueta} no es válido${c.minimo !== undefined || c.maximo !== undefined ? ` (entre ${c.minimo ?? '−∞'} y ${c.maximo ?? '∞'})` : ''}.`);
+        } else valores[c.col] = n;
+        break;
+      }
+      case 'fecha':
+        if (!esFechaValida(v)) errores.push(`${etiqueta} no es una fecha válida (formato AAAA-MM-DD).`);
+        else valores[c.col] = v;
+        break;
+      case 'telefono':
+        if (!/^\+?\d[\d ]{7,13}\d$/.test(v)) errores.push(`${etiqueta} no es válido (ejemplo: +56 9 1234 5678).`);
+        else valores[c.col] = v;
+        break;
       case 'email':
         if (v.length > (c.max || 150) || !REGEX_CORREO.test(v)) errores.push(`${etiqueta} no tiene un formato válido.`);
         else valores[c.col] = v.toLowerCase();

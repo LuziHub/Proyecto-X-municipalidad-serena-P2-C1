@@ -5,6 +5,7 @@
 // delegaciones(id_delegacion, codigo, nombre, estado 'Activa'|'Inactiva').
 
 const db = require('../config/db');
+const { puede } = require('../config/permisos');
 
 const ERROR_SIN_DELEGACION = {
   status: 403,
@@ -47,6 +48,18 @@ function alcance(modulo, auth) {
   if (modulo === 'atenciones') {
     if (!auth.delegacion) return { error: ERROR_SIN_DELEGACION };
     return { where: 'a.id_delegacion = ?', params: [auth.delegacion.id] };
+  }
+
+  // Matriz: siempre dentro de la delegación activa. Quien no puede ver al equipo solo ve lo suyo
+  // (el tubo es la excepción: es un tablero compartido por toda la delegación).
+  const MATRIZ = { gestiones: ['g', 'id_responsable'], tubo: ['t', null], cartas: ['c', null], valoraciones: ['v', 'id_funcionario'], ausencias: ['a', 'id_usuario'] };
+  if (MATRIZ[modulo]) {
+    if (!auth.delegacion) return { error: ERROR_SIN_DELEGACION };
+    const [alias, columnaPropia] = MATRIZ[modulo];
+    const where = [`${alias}.id_delegacion = ?`];
+    const params = [auth.delegacion.id];
+    if (columnaPropia && !puede(auth.permisos, 'equipo', 'ver')) { where.push(`${alias}.${columnaPropia} = ?`); params.push(auth.usuario.id); }
+    return { where: where.join(' AND '), params };
   }
 
   if (modulo === 'usuarios') {

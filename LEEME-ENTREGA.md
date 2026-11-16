@@ -39,3 +39,17 @@ git tag -a entrega-2 -m "Segunda evaluación" && git push origin entrega-2
 
 ## Pendiente de tu lado para la entrega
 Completar integrantes y datos de AWS en el README · ejecutar los casos de la planilla en AWS con evidencias · definir umbrales con el docente y correr el estrés · IP elástica · cerrar el puerto SSH abierto a todo internet · tipografía y escudo según las normas gráficas oficiales.
+
+
+---
+# Ampliación: Matriz SGR
+Instrucciones completas en `docs/Matriz-SGR.md`. Orden en el servidor, sobre lo ya instalado:
+1. Respaldo de la base y copiar el contenido de este zip sobre el proyecto (`src/`, `scripts/`, `database/`, `tests/`, `docs/`).
+2. `mysql -u root -p sgr_laserena_db < database/03_matriz.sql` y luego `database/04_matriz_ampliacion.sql` (ambos repetibles)
+3. `node scripts/preparar-matriz.js` (simulación) → `node scripts/preparar-matriz.js --aplicar`
+4. `pm2 restart sgr-api --update-env`
+
+**Verificado:** 112 pruebas automáticas (SQLite) y la interfaz en Chromium contra la lógica real (semáforo, gestiones, tubo, equipo, valoraciones, ausencias, metas, períodos) sin errores de JavaScript.
+**No verificado:** `03_matriz.sql` y las consultas contra MySQL real, Express/bcrypt/SMTP reales, y el estilo final con Tailwind (la prueba usó un sustituto sin red). Pruébalo primero en AWS.
+
+Catálogo de JJVV (opcional): `node scripts/importar-jjvv.js ruta/planilla.xlsx` y luego con `--aplicar`. Usa `exceljs`, que ya es dependencia del proyecto; esa lectura de .xlsx **no se probó aquí** (sin npm), solo la lectura de .csv con tu planilla real.

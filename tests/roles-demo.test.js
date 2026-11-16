@@ -30,7 +30,7 @@ test('cada rol ve únicamente los módulos que le corresponden', async () => {
   assert.ok(!modulosCon(c, 'coordinador', 'ver').includes('roles'));
   assert.ok(modulosCon(c, 'coordinador', 'ver').includes('usuarios'));
   assert.ok(modulosCon(c, 'delegado', 'ver').includes('usuarios') && !modulosCon(c, 'delegado', 'ver').includes('roles'));
-  assert.equal(modulosCon(c, 'superadmin', 'ver').length, 12);
+  assert.equal(modulosCon(c, 'superadmin', 'ver').length, 22);
   assert.deepEqual(modulosCon(c, 'consultor', 'crear'), []);
   assert.ok(modulosCon(c, 'consultor', 'ver').includes('reportes'));
   // los módulos plantilla solo tienen la acción "ver"

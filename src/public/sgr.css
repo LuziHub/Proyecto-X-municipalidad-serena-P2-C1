@@ -29,3 +29,21 @@
 .cod-caja { width:2.75rem; height:3.25rem; text-align:center; font-size:1.5rem; font-weight:700; border-radius:.5rem; border:2px solid #cbd5e1; background:#fff; color:#0f172a; }
 .cod-caja:focus { border-color: var(--muni-acento); }
 .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+
+/* Matriz SGR: semáforo, tablero del tubo */
+.sem { display:inline-flex; align-items:center; gap:.4rem; padding:.2rem .8rem; border-radius:999px; font-weight:800; font-size:.8rem; }
+.sem::before { content:''; width:.7rem; height:.7rem; border-radius:50%; background:currentColor; }
+.sem-Verde { background:#dcfce7; color:#166534; } .sem-Naranjo { background:#ffedd5; color:#9a3412; } .sem-Rojo { background:#fee2e2; color:#991b1b; }
+.barra { height:.6rem; background:#e2e8f0; border-radius:999px; position:relative; overflow:hidden; }
+.barra > span { display:block; height:100%; border-radius:999px; background:#475569; }
+.barra > i { position:absolute; top:-2px; bottom:-2px; width:2px; background:#0f172a; }
+.kpi { background:#fff; border:1px solid #e2e8f0; border-radius:.75rem; padding:.9rem 1rem; border-left-width:5px; }
+.kpi b { display:block; font-size:1.9rem; line-height:1.1; }
+.kpi small { color:#64748b; font-weight:600; }
+.tablero { display:grid; grid-template-columns:repeat(auto-fit,minmax(15rem,1fr)); gap:.75rem; align-items:start; }
+.columna { background:#e2e8f0; border-radius:.75rem; padding:.6rem; min-height:8rem; }
+.columna h2 { font-size:.8rem; font-weight:800; text-transform:uppercase; color:#334155; display:flex; justify-content:space-between; margin-bottom:.5rem; }
+.tarjeta { background:#fff; border-radius:.6rem; padding:.65rem .75rem; margin-bottom:.5rem; border:1px solid #cbd5e1; font-size:.82rem; }
+.tarjeta .cod { font-weight:800; font-size:.75rem; color:#475569; }
+.tarjeta.hecha .titulo { text-decoration:line-through; color:#64748b; }
+.tarjeta .meta { color:#475569; font-size:.75rem; }

@@ -21,6 +21,7 @@ Plataforma web institucional para la gestión de atenciones ciudadanas por deleg
 | CRUD Delegaciones, Roles, Usuarios, Ítems y metas, Tipo de Atención, Sub Atención | Operativo |
 | Ingreso de atención (tipo → sub atención, delegación y responsable desde la sesión) | Operativo |
 | Roles y permisos, delegación activa, exportación a Excel | Operativo |
+| **Matriz SGR** (nuevo): roles por cargo, registro de gestiones con reglas 1-5 y 7-9, tubo de trabajo (kanban), felicitaciones/reclamos, ausencias, puntaje y semáforo por funcionario, vista de equipo, metas por cargo y períodos | Operativo (ver `docs/Matriz-SGR.md`) |
 | Vecinos, Tipo de Gestión, Verificación de evidencias, Alertas, Reportes | **Simulado**: plantilla de interfaz con datos ilustrativos, sin persistencia |
 
 Detalle completo y pendientes: `docs/Plan_y_registro_de_pruebas_SGR.xlsx` (hoja «Resumen»).
@@ -68,6 +69,6 @@ pm2 restart sgr-api --update-env
 - **Verificar:** `GET /api/status` responde y el login funciona; el commit/tag desplegado debe coincidir con el entregado (`git describe --tags`).
 
 ## Pruebas
-- **Automáticas:** `npm test` (76 pruebas: permisos por rol, delegaciones, login, recuperación, CRUD, exportación, anti-escalamiento). Usan una base SQLite con la misma estructura y no reemplazan la validación en AWS.
+- **Automáticas:** `npm test` (112 pruebas: permisos por rol, delegaciones, login, recuperación, CRUD, exportación, anti-escalamiento, reglas y puntaje de la matriz). Usan una base SQLite con la misma estructura y no reemplazan la validación en AWS.
 - **Funcionales manuales:** `docs/Plan_y_registro_de_pruebas_SGR.xlsx` (hoja «Pruebas funcionales»: requisito, módulo, precondiciones, pasos, esperado, obtenido, estado, evidencia, responsable, fecha) y hoja «Defectos».
 - **Estrés:** `node scripts/prueba-estres.js --url=http://<IP>:3000 --correo=<usuario con permiso de exportar> --clave=... --niveles=5,10,20,40,80`. Registra los resultados en la hoja «Pruebas de estrés». `--escritura` crea datos de prueba.

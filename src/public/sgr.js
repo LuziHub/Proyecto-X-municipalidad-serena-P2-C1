@@ -56,3 +56,19 @@ function fechaHora(v) {
   const d = new Date(v);
   return isNaN(d) ? esc(v) : d.toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' });
 }
+
+// Fechas «AAAA-MM-DD» de la base: se muestran como DD-MM-AAAA sin pasar por Date (evita desfases de zona horaria).
+function dia(v) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(v || ''));
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : (v ? String(v) : '—');
+}
+// Fracción → porcentaje con coma decimal (0,25 → «25 %»; 0,0042 → «0,4 %»).
+function pct(v) {
+  if (v === null || v === undefined || v === '') return '—';
+  const n = Math.round(Number(v) * 1000) / 10;
+  return `${String(n).replace('.', ',')} %`;
+}
+function hoyLocal() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}

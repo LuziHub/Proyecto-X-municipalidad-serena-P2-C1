@@ -68,9 +68,109 @@
       campos: [{ k: 'codigo', l: 'Código', max: 10, req: 1 }, { k: 'nombre', l: 'Nombre', max: 100, req: 1 }, { k: 'descripcion', l: 'Descripción', max: 255, req: 1, t: 'area' }, { k: 'estado', l: 'Estado', t: 'sel', op: ESTADOS_ACTIVO, def: 'Activo' }] },
     'sub-atenciones': { etiqueta: 'Sub Atención', icono: 'fa-sitemap', singular: 'sub atención', estados: ESTADOS_ACTIVA,
       columnas: [['codigo', 'Código'], ['nombre', 'Nombre'], ['tipo', 'Tipo de Atención'], ['estado', 'Estado', 'estado']],
-      campos: [{ k: 'codigo', l: 'Código', max: 10, req: 1 }, { k: 'nombre', l: 'Nombre', max: 100, req: 1 }, { k: 'id_tipo', l: 'Tipo de Atención', t: 'sel', lookup: 'tipos', req: 1 }, { k: 'estado', l: 'Estado', t: 'sel', op: ESTADOS_ACTIVA, def: 'Activa' }] }
+      campos: [{ k: 'codigo', l: 'Código', max: 10, req: 1 }, { k: 'nombre', l: 'Nombre', max: 100, req: 1 }, { k: 'id_tipo', l: 'Tipo de Atención', t: 'sel', lookup: 'tipos', req: 1 }, { k: 'estado', l: 'Estado', t: 'sel', op: ESTADOS_ACTIVA, def: 'Activa' }] },
+    'gestiones': { etiqueta: 'Registro de gestiones', icono: 'fa-list-check', singular: 'gestión',
+      columnas: [['codigo', 'Código'], ['codigo_area', 'Cód. matriz'], ['fecha_gestion', 'Fecha', 'dia'], ['item', 'Ítem'], ['actividad', 'Actividad'], ['contacto_nombre', 'Usuario atendido'], ['puntua', 'Puntúa', 'si'], ['imagen_verificada', 'Imagen verif.', 'si'], ['responsable', 'Responsable']],
+      campos: [
+        { k: 'fecha_gestion', l: 'Fecha de la gestión', t: 'fecha', def: 'HOY', req: 1 },
+        { k: 'id_item', l: 'Ítem de la matriz', t: 'sel', lookup: 'items-mios', req: 1 },
+        { k: 'actividad', l: 'Actividad / solicitud', t: 'area', max: 255, req: 1 },
+        { k: 'detalle', l: 'Detalle (opcional)', t: 'area', max: 2000 },
+        { k: 'contacto_nombre', l: 'Nombre del usuario atendido', max: 150, nota: 'En los ítems de atención a usuarios, sin nombre y teléfono la gestión se guarda pero no puntúa.' },
+        { k: 'contacto_telefono', l: 'Teléfono del usuario', tipo: 'tel', max: 20, ph: '+56912345678' },
+        { k: 'usuario_es_delegado', l: 'El usuario atendido es el delegado (no puntúa)', t: 'chk' },
+        { k: 'es_coordinacion', l: 'Es una coordinación previa: correos, invitaciones, gestiones internas (no puntúa)', t: 'chk' },
+        { k: 'ingreso_tubo', l: 'Ingresar también al tubo de trabajo', t: 'chk' },
+        { k: 'codigo_foto', l: 'Código de la foto / evidencia', max: 60, ph: 'Ej.: IMG_2026-15', nota: 'La imagen la verifica la jefatura; el funcionario no puede verificar sus propias gestiones.' }] },
+    'tubo': { etiqueta: 'Tubo de trabajo', icono: 'fa-diagram-project', singular: 'gestión del tubo',
+      columnas: [],
+      campos: [
+        { k: 'titulo', l: 'Actividad / solicitud', t: 'area', max: 255, req: 1 },
+        { k: 'id_organizacion', l: 'Organización del catálogo (opcional)', t: 'org', nota: 'Escribe 2 letras para buscar una junta de vecinos, club u otra organización; completa el solicitante y el territorio.' },
+        { k: 'solicitante', l: 'Solicitante', max: 150, req: 1 },
+        { k: 'territorio', l: 'Territorio', max: 60 },
+        { k: 'ambito', l: 'Interno o externo', t: 'sel', op: ['INT', 'EXT'], def: 'INT' },
+        { k: 'area_apoyo', l: 'Área o persona de apoyo', max: 150 },
+        { k: 'fecha_compromiso', l: 'Fecha de compromiso', t: 'fecha' },
+        { k: 'avance', l: 'Avance / observaciones', t: 'area', max: 2000 }] },
+    'valoraciones': { etiqueta: 'Felicitaciones y reclamos', icono: 'fa-star-half-stroke', singular: 'felicitación o reclamo',
+      columnas: [['fecha', 'Fecha', 'dia'], ['tipo', 'Tipo'], ['funcionario', 'Funcionario'], ['medio', 'Medio'], ['respaldo', 'Respaldo']],
+      campos: [
+        { k: 'tipo', l: 'Tipo', t: 'sel', op: ['Felicitación', 'Reclamo'], req: 1 },
+        { k: 'id_funcionario', l: 'Funcionario', t: 'sel', lookup: 'funcionarios', req: 1 },
+        { k: 'fecha', l: 'Fecha', t: 'fecha', def: 'HOY', req: 1 },
+        { k: 'medio', l: 'Medio formal', t: 'sel', op: ['Correo al delegado', 'WhatsApp al delegado', 'Libro de observaciones', 'Carta'], req: 1 },
+        { k: 'detalle', l: 'Detalle', t: 'area', max: 2000, req: 1 },
+        { k: 'respaldo', l: 'Respaldo formal (correo, folio del libro, etc.)', max: 255, req: 1, nota: 'Sin respaldo formal no se puede registrar. Cada felicitación suma 10 % (máximo 3) y cada reclamo resta.' }] },
+    'ausencias': { etiqueta: 'Licencias y ausencias', icono: 'fa-calendar-xmark', singular: 'ausencia',
+      columnas: [['funcionario', 'Funcionario'], ['tipo', 'Tipo'], ['fecha_desde', 'Desde', 'dia'], ['fecha_hasta', 'Hasta', 'dia'], ['observacion', 'Observación']],
+      campos: [
+        { k: 'id_usuario', l: 'Funcionario', t: 'sel', lookup: 'funcionarios', req: 1 },
+        { k: 'tipo', l: 'Tipo', t: 'sel', op: ['Licencia', 'Vacaciones', 'Día administrativo', 'Compensatorio', 'Emergencia'], req: 1 },
+        { k: 'fecha_desde', l: 'Desde', t: 'fecha', req: 1 },
+        { k: 'fecha_hasta', l: 'Hasta', t: 'fecha', req: 1 },
+        { k: 'observacion', l: 'Observación', max: 255, nota: 'Los días de ausencia se descuentan del objetivo del semáforo.' }] },
+    'metas-cargo': { etiqueta: 'Metas por cargo', icono: 'fa-scale-balanced', singular: 'meta',
+      columnas: [['periodo', 'Período'], ['cargo', 'Cargo'], ['item', 'Ítem'], ['ponderador', 'Ponderador', 'pct'], ['meta', 'Meta'], ['calculo', 'Cálculo']],
+      campos: [
+        { k: 'id_periodo', l: 'Período', t: 'sel', lookup: 'periodos', req: 1 },
+        { k: 'id_rol', l: 'Cargo (rol)', t: 'sel', lookup: 'cargos', req: 1 },
+        { k: 'id_item', l: 'Ítem', t: 'sel', lookup: 'items', req: 1 },
+        { k: 'ponderador', l: 'Ponderador (0,25 = 25 %; los reclamos van en negativo)', t: 'num', paso: '0.01', req: 1 },
+        { k: 'meta', l: 'Meta del período (en «tubo»: 0,8 = 80 %)', t: 'num', paso: '0.01', req: 1 },
+        { k: 'calculo', l: 'Cómo se calcula', t: 'sel', op: ['conteo', 'emergencia', 'tubo', 'felicitacion', 'reclamo'], def: 'conteo' },
+        { k: 'requiere_contacto', l: 'Exige nombre y teléfono del usuario para puntuar', t: 'chk' }] },
+    'periodos': { etiqueta: 'Períodos', icono: 'fa-calendar-days', singular: 'período', estados: ESTADOS_ACTIVO,
+      columnas: [['nombre', 'Período'], ['fecha_inicio', 'Inicio', 'dia'], ['fecha_fin', 'Término', 'dia'], ['tope_item', 'Tope ítem', 'pct'], ['max_gestiones_dia', 'Máx. por día'], ['estado', 'Estado', 'estado']],
+      campos: [
+        { k: 'nombre', l: 'Nombre', max: 60, req: 1 },
+        { k: 'fecha_inicio', l: 'Inicio', t: 'fecha', req: 1 },
+        { k: 'fecha_fin', l: 'Término', t: 'fecha', req: 1 },
+        { k: 'tope_item', l: 'Tope por ítem (1,2 = 120 %)', t: 'num', paso: '0.01', def: 1.2 },
+        { k: 'tope_total', l: 'Tope total por colaborador (1,5 = 150 %)', t: 'num', paso: '0.01', def: 1.5 },
+        { k: 'minimo_cumplimiento', l: 'Cumplimiento mínimo (0,8 = 80 %)', t: 'num', paso: '0.01', def: 0.8 },
+        { k: 'max_gestiones_dia', l: 'Máximo de gestiones por día', t: 'num', paso: '1', def: 7 },
+        { k: 'cierre_dia_semana', l: 'Día de cierre de la semana anterior (1 = lunes … 7 = domingo)', t: 'num', paso: '1', def: 2 },
+        { k: 'exigir_verificacion', l: 'Solo cuentan las gestiones con imagen verificada', t: 'chk' },
+        { k: 'estado', l: 'Estado', t: 'sel', op: ESTADOS_ACTIVO, def: 'Activo' }] },
+    'cartas': { etiqueta: 'Tubo de cartas', icono: 'fa-envelope-open-text', singular: 'carta', estados: ['En proceso', 'Aprobada', 'Finalizada', 'No aplica'],
+      columnas: [['codigo', 'Código'], ['fecha', 'Fecha', 'dia'], ['numero', 'Nº ingreso'], ['para', 'Para'], ['remite', 'Remite'], ['tema', 'Tema'], ['estado', 'Estado'], ['pronunciamiento', 'Pronunciamiento']],
+      campos: [
+        { k: 'fecha', l: 'Fecha de la carta', t: 'fecha', def: 'HOY', req: 1 },
+        { k: 'numero', l: 'Nº de ingreso en Oficina de Partes', max: 20 },
+        { k: 'para', l: 'Para', t: 'sel', op: ['Alcaldesa', 'Delegado', 'Otro'], def: 'Alcaldesa' },
+        { k: 'remite', l: 'Remite', max: 150, req: 1 },
+        { k: 'fono', l: 'Teléfono de contacto', tipo: 'tel', max: 20 },
+        { k: 'tema', l: 'Actividad o tema', t: 'area', max: 255, req: 1 },
+        { k: 'fecha_actividad', l: 'Fecha de la actividad', t: 'fecha' },
+        { k: 'encargado', l: 'Encargado de seguimiento', max: 150 },
+        { k: 'estado', l: 'Estado', t: 'sel', op: ['En proceso', 'Aprobada', 'Finalizada', 'No aplica'], def: 'En proceso' },
+        { k: 'pronunciamiento', l: 'Pronunciamiento', t: 'sel', op: ['Gabinete', 'Delegado', 'Alcaldesa', 'No aplica'], def: 'No aplica' },
+        { k: 'derivada_a', l: 'Derivada a', max: 150 },
+        { k: 'observacion', l: 'Observación', t: 'area', max: 2000 }] },
+    'organizaciones': { etiqueta: 'Organizaciones', icono: 'fa-people-roof', singular: 'organización', estados: ESTADOS_ACTIVO,
+      columnas: [['nombre', 'Organización'], ['territorio', 'Territorio'], ['domicilio', 'Domicilio'], ['socios_activos', 'Socios'], ['estado', 'Estado', 'estado']],
+      campos: [
+        { k: 'nombre', l: 'Nombre de la organización', max: 255, req: 1 },
+        { k: 'domicilio', l: 'Domicilio legal', max: 255 },
+        { k: 'territorio', l: 'Territorio', max: 60 },
+        { k: 'socios_activos', l: 'Socios activos', t: 'num', paso: '1' },
+        { k: 'fecha_constitucion', l: 'Fecha de constitución', t: 'fecha' },
+        { k: 'nro_registro_pj', l: 'Nº de registro de personalidad jurídica', max: 20 },
+        { k: 'fecha_inscripcion', l: 'Fecha de inscripción en el registro', t: 'fecha' },
+        { k: 'reg_dir', l: 'Nº de registro de directiva', max: 20 },
+        { k: 'estado', l: 'Estado', t: 'sel', op: ESTADOS_ACTIVO, def: 'Activo' }] }
   };
   const ORDEN = ['atenciones', 'delegaciones', 'roles', 'usuarios', 'items-metas', 'tipos-atencion', 'sub-atenciones'];
+  // Matriz SGR: módulos con pantalla propia (PANTALLAS) y listados (MODULOS).
+  const ORDEN_MATRIZ = ['semaforo', 'gestiones', 'tubo', 'cartas', 'equipo', 'valoraciones', 'ausencias', 'organizaciones', 'metas-cargo', 'periodos'];
+  const PANTALLAS = {
+    'semaforo': { etiqueta: 'Mi puntaje y semáforo', icono: 'fa-traffic-light', abrir: () => pantallaSemaforo() },
+    'tubo': { etiqueta: 'Tubo de trabajo', icono: 'fa-diagram-project', abrir: () => pantallaTubo() },
+    'equipo': { etiqueta: 'Equipo de la delegación', icono: 'fa-people-group', abrir: () => pantallaEquipo() }
+  };
+  const etiquetaMatriz = id => (PANTALLAS[id] || MODULOS[id]).etiqueta;
+  const iconoMatriz = id => (PANTALLAS[id] || MODULOS[id]).icono;
 
   // Campos que muestra la vista de consulta ("Ver") de cada módulo.
   const VER = {
@@ -80,7 +180,19 @@
     'usuarios': [['nombre', 'Nombre'], ['correo', 'Correo'], ['rut', 'RUT'], ['rol', 'Rol'], ['delegacion', 'Delegación principal'], ['delegaciones', 'Delegaciones autorizadas', 'delegaciones'], ['estado', 'Estado'], ['ultimo_ingreso', 'Último ingreso', 'fecha']],
     'items-metas': [['codigo', 'Código'], ['nombre', 'Nombre'], ['descripcion', 'Descripción'], ['estado', 'Estado']],
     'tipos-atencion': [['codigo', 'Código'], ['nombre', 'Nombre'], ['descripcion', 'Descripción'], ['estado', 'Estado']],
-    'sub-atenciones': [['codigo', 'Código'], ['nombre', 'Nombre'], ['tipo', 'Tipo de Atención'], ['estado', 'Estado']]
+    'sub-atenciones': [['codigo', 'Código'], ['nombre', 'Nombre'], ['tipo', 'Tipo de Atención'], ['estado', 'Estado']],
+    'gestiones': [['codigo', 'Código'], ['codigo_area', 'Código matriz'], ['codigo_foto', 'Código de la foto'], ['imagen_verificada', 'Imagen verificada', 'si'], ['verificador', 'Verificada por'], ['fecha_verificacion', 'Fecha de verificación', 'dia'], ['fecha_gestion', 'Fecha', 'dia'], ['item', 'Ítem'], ['actividad', 'Actividad'], ['detalle', 'Detalle'], ['contacto_nombre', 'Usuario atendido'], ['contacto_telefono', 'Teléfono'],
+      ['puntua', 'Puntúa', 'si'], ['motivo_no_puntua', 'Motivo si no puntúa'], ['usuario_es_delegado', 'Usuario es el delegado', 'si'], ['es_coordinacion', 'Coordinación previa', 'si'], ['ingreso_tubo', 'Ingresada al tubo', 'si'], ['responsable', 'Responsable'], ['delegacion_codigo', 'Delegación']],
+    'tubo': [['codigo', 'Código'], ['codigo_gestion', 'Gestión'], ['titulo', 'Actividad'], ['solicitante', 'Solicitante'], ['organizacion', 'Organización del catálogo'], ['territorio', 'Territorio'], ['ambito', 'Interno / externo'], ['area_apoyo', 'Apoyo'], ['estado', 'Estado'],
+      ['fecha_solicitud', 'Solicitud', 'dia'], ['fecha_compromiso', 'Compromiso', 'dia'], ['fecha_realizado', 'Realizada', 'dia'], ['responsable', 'Responsable'], ['avance', 'Avance']],
+    'valoraciones': [['tipo', 'Tipo'], ['funcionario', 'Funcionario'], ['fecha', 'Fecha', 'dia'], ['medio', 'Medio formal'], ['detalle', 'Detalle'], ['respaldo', 'Respaldo'], ['registrado_por_nombre', 'Registrado por']],
+    'ausencias': [['funcionario', 'Funcionario'], ['tipo', 'Tipo'], ['fecha_desde', 'Desde', 'dia'], ['fecha_hasta', 'Hasta', 'dia'], ['observacion', 'Observación'], ['delegacion_codigo', 'Delegación']],
+    'metas-cargo': [['periodo', 'Período'], ['cargo', 'Cargo'], ['item', 'Ítem'], ['ponderador', 'Ponderador', 'pct'], ['meta', 'Meta'], ['calculo', 'Cálculo'], ['requiere_contacto', 'Exige contacto', 'si']],
+    'cartas': [['codigo', 'Código'], ['fecha', 'Fecha', 'dia'], ['numero', 'Nº de ingreso'], ['para', 'Para'], ['remite', 'Remite'], ['fono', 'Teléfono'], ['tema', 'Tema'], ['fecha_actividad', 'Fecha de la actividad', 'dia'],
+      ['encargado', 'Encargado de seguimiento'], ['estado', 'Estado'], ['pronunciamiento', 'Pronunciamiento'], ['derivada_a', 'Derivada a'], ['observacion', 'Observación'], ['responsable', 'Registrada por']],
+    'organizaciones': [['nombre', 'Organización'], ['domicilio', 'Domicilio legal'], ['territorio', 'Territorio'], ['socios_activos', 'Socios activos'], ['fecha_constitucion', 'Constitución', 'dia'], ['nro_registro_pj', 'Nº registro PJ'], ['fecha_inscripcion', 'Inscripción', 'dia'], ['reg_dir', 'Registro de directiva'], ['estado', 'Estado']],
+    'periodos': [['nombre', 'Período'], ['fecha_inicio', 'Inicio', 'dia'], ['fecha_fin', 'Término', 'dia'], ['tope_item', 'Tope por ítem', 'pct'], ['tope_total', 'Tope total', 'pct'], ['minimo_cumplimiento', 'Cumplimiento mínimo', 'pct'], ['exigir_verificacion', 'Exige imagen verificada', 'si'],
+      ['max_gestiones_dia', 'Máx. gestiones por día'], ['cierre_dia_semana', 'Día de cierre (1 = lunes)'], ['estado', 'Estado']]
   };
 
   // Módulos que en esta entrega son solo plantilla: navegación y vista por rol, sin lógica (datos ilustrativos).
@@ -147,8 +259,10 @@
     const items = [['inicio', 'Inicio', 'fa-house']];
     if (puede('atenciones', 'crear')) items.push(['ingreso', 'Ingreso de atención', 'fa-pen-to-square']);
     ORDEN.filter(m => puede(m, 'ver')).forEach(m => items.push([m, MODULOS[m].etiqueta, MODULOS[m].icono]));
+    const matriz = ORDEN_MATRIZ.filter(m => puede(m, 'ver')).map(m => [m, etiquetaMatriz(m), iconoMatriz(m)]);
     const extra = Object.keys(PLANTILLAS).filter(m => puede(m, 'ver')).map(m => [m, PLANTILLAS[m].titulo, PLANTILLAS[m].icono]);
     $('menu').innerHTML = items.map(item).join('') +
+      (matriz.length ? `<p class="hidden md:block text-[11px] uppercase font-bold text-slate-500 px-3 pt-3">Matriz SGR</p>` + matriz.map(item).join('') : '') +
       (extra.length ? `<p class="hidden md:block text-[11px] uppercase font-bold text-slate-500 px-3 pt-3">Otros módulos (plantilla)</p>` + extra.map(item).join('') : '');
     document.querySelectorAll('.menu-item').forEach(b => b.addEventListener('click', () => abrir(b.dataset.mod)));
   }
@@ -172,6 +286,7 @@
     if (id === 'inicio') return pantallaInicio();
     if (id === 'ingreso') return pantallaIngreso();
     if (PLANTILLAS[id]) return pantallaPlantilla(id);
+    if (PANTALLAS[id]) return PANTALLAS[id].abrir();
     estadoLista = { page: 1, search: '', estado: '' };
     listar();
   }
@@ -180,6 +295,9 @@
   function celda(v, tipo) {
     if (tipo === 'estado') return `<span class="pastilla ${['Activo', 'Activa'].includes(v) ? 'p-ok' : 'p-off'}">${esc(v)}</span>`;
     if (tipo === 'fecha') return esc(fechaHora(v));
+    if (tipo === 'dia') return esc(dia(v));
+    if (tipo === 'si') return `<span class="pastilla ${Number(v) ? 'p-ok' : 'p-off'}">${Number(v) ? 'Sí' : 'No'}</span>`;
+    if (tipo === 'pct') return esc(pct(v));
     return esc(v === null || v === undefined || v === '' ? '—' : v);
   }
 
@@ -193,6 +311,7 @@
         ${actual === 'atenciones' ? '' : (puede(actual, 'crear') ? `<button id="nuevo" class="btn btn-primario"><i class="fa-solid fa-plus"></i> Nuevo</button>` : '')}
         ${actual === 'atenciones' && puede('atenciones', 'crear') ? '<button id="nuevo" class="btn btn-primario"><i class="fa-solid fa-plus"></i> Registrar atención</button>' : ''}
       </div>
+ <div id="kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3"></div>
       <div class="flex flex-wrap gap-2 mb-3">
         <input id="buscar" class="campo !w-64" placeholder="Buscar..." maxlength="100" value="${esc(estadoLista.search)}" aria-label="Buscar">
         ${m.estados ? `<select id="f-estado" class="campo !w-40" aria-label="Filtrar por estado"><option value="">Todos los estados</option>${m.estados.map(e => `<option ${estadoLista.estado === e ? 'selected' : ''}>${e}</option>`).join('')}</select>` : ''}
@@ -205,6 +324,7 @@
     if ($('f-estado')) $('f-estado').addEventListener('change', e => { estadoLista.estado = e.target.value; estadoLista.page = 1; cargarFilas(); });
     if ($('nuevo')) $('nuevo').addEventListener('click', () => (actual === 'atenciones' ? abrir('ingreso') : formulario(null)));
     if ($('exportar')) $('exportar').addEventListener('click', exportar);
+    if (actual === 'cartas') resumenCartas();
     cargarFilas();
   }
 
@@ -230,9 +350,15 @@
     $('tabla').className = '';
     $('tabla').innerHTML = `<table class="tabla w-full"><thead><tr>${m.columnas.map(c => `<th scope="col">${esc(c[1])}</th>`).join('')}${acciones ? '<th scope="col">Acciones</th>' : ''}</tr></thead><tbody>
       ${filas.map(f => `<tr>${m.columnas.map(c => `<td>${celda(f[c[0]], c[2])}</td>`).join('')}${acciones ? `<td class="whitespace-nowrap">
-        <button class="btn btn-sec !py-1" data-ver="${f.id}" aria-label="Ver ${esc(f.nombre || f.identificador_atencion || f.correo || '')}"><i class="fa-regular fa-eye"></i> Ver</button>
+        <button class="btn btn-sec !py-1" data-ver="${f.id}" aria-label="Ver ${esc(f.nombre || f.identificador_atencion || f.correo || f.codigo || '')}"><i class="fa-regular fa-eye"></i> Ver</button>
         ${puede(modulo, 'editar') && modulo !== 'atenciones' ? `<button class="btn btn-sec !py-1" data-edit="${f.id}" aria-label="Editar ${esc(f.nombre || f.correo || '')}"><i class="fa-solid fa-pen"></i> Editar</button>` : ''}
+        ${modulo === 'gestiones' && puede('valoraciones', 'crear') && Number(f.id_responsable) !== Number(usuario.id) ? `<button class="btn btn-sec !py-1" data-verif="${f.id}" data-estado="${Number(f.imagen_verificada) ? 0 : 1}" title="La jefatura verifica la imagen de la gestión"><i class="fa-solid fa-circle-check ${Number(f.imagen_verificada) ? 'text-green-700' : ''}"></i> ${Number(f.imagen_verificada) ? 'Quitar verificación' : 'Verificar'}</button>` : ''}
         ${puede(modulo, 'eliminar') ? `<button class="btn btn-sec !py-1 text-red-700" data-del="${f.id}" aria-label="Eliminar ${esc(f.nombre || f.identificador_atencion || f.correo || '')}"><i class="fa-solid fa-trash"></i> Eliminar</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table>`;
+    $('tabla').querySelectorAll('[data-verif]').forEach(b => b.addEventListener('click', async () => {
+      b.disabled = true;
+      const x = await api(`/gestiones/${b.dataset.verif}/verificar`, { method: 'PUT', body: { verificada: b.dataset.estado === '1' } });
+      if (x.ok) { toast('success', x.data.message); cargarFilas(); } else { aviso('error', 'No se pudo verificar', x.data.message); b.disabled = false; }
+    }));
     $('tabla').querySelectorAll('[data-ver]').forEach(b => b.addEventListener('click', () => detalle(b.dataset.ver)));
     $('tabla').querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => formulario(b.dataset.edit)));
     $('tabla').querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => eliminar(b.dataset.del, filas.find(f => String(f.id) === b.dataset.del))));
@@ -242,6 +368,13 @@
     $('sig').addEventListener('click', () => { estadoLista.page += 1; cargarFilas(); });
   }
 
+  async function resumenCartas() {
+    const r = await api('/cartas/resumen');
+    if (!r.ok || actual !== 'cartas' || !$('kpis')) return;
+    const x = r.data.resumen;
+    const kpi = (n, txt, color) => `<div class="kpi" style="border-left-color:${color}"><b>${n}</b><small>${txt}</small></div>`;
+    $('kpis').innerHTML = kpi(x.total, 'Cartas en seguimiento', '#475569') + kpi(x.enProceso, 'En proceso', '#2563eb') + kpi(x.aprobadas, 'Aprobadas', '#f59e0b') + kpi(x.finalizadas, 'Finalizadas', '#16a34a');
+  }
   async function exportar() {
     const b = $('exportar'); b.disabled = true;
     try {
@@ -260,7 +393,7 @@
 
   async function eliminar(id, fila) {
     const m = MODULOS[actual];
-    const nombre = fila.nombre || fila.identificador_atencion || fila.correo || `#${id}`;
+    const nombre = fila.nombre || fila.identificador_atencion || fila.correo || fila.codigo || fila.funcionario || `#${id}`;
     const c = await Swal.fire({ icon: 'warning', title: `¿Eliminar ${m.singular}?`, text: nombre, showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar', confirmButtonColor: '#DB0032' });
     if (!c.isConfirmed) return;
     const r = await api(`/${actual}/${id}`, { method: 'DELETE' });
@@ -283,7 +416,7 @@
     if (nombre === 'delegaciones') return usuario.delegaciones.map(d => ({ id: d.id, nombre: `${d.codigo} · ${d.nombre}` }));
     if (cache[nombre]) return cache[nombre];
     const r = await api(`/lookup/${nombre}`);
-    if (r.ok) cache[nombre] = r.data.data;
+    if (r.ok && !['funcionarios', 'periodos', 'cargos', 'items'].includes(nombre)) cache[nombre] = r.data.data;
     return r.ok ? r.data.data : [];
   }
   const delegacionesPermitidas = () => usuario.delegaciones;
@@ -313,16 +446,36 @@
       datos = r.data.data;
     }
     if (modulo === 'roles') MODULOS.roles.campos.find(c => c.k === 'alcance').op = config.alcances;
+    // Registro de gestiones: se necesita el período vigente y la ventana de fechas que todavía se puede ingresar (regla 4)
+    let vent = null;
+    if (modulo === 'gestiones') {
+      const v = await api('/lookup/items-mios');
+      if (!v.ok) return aviso('error', 'No se pudo preparar el formulario', v.data.message || 'Error del servidor.');
+      if (!v.data.periodo) return aviso('info', 'Sin período activo', 'No hay un período activo que incluya la fecha de hoy. Pídele a la Coordinación que lo cree.');
+      if (!v.data.data.length) return aviso('info', 'Sin metas asignadas', 'Tu cargo no tiene ítems en este período. Pídele a la Coordinación que cargue las metas de tu cargo.');
+      vent = v.data;
+    }
     let html = '';
     for (const c of m.campos) {
-      const v = datos[c.k] !== undefined && datos[c.k] !== null ? datos[c.k] : (c.def !== undefined ? c.def : '');
+      let v = datos[c.k] !== undefined && datos[c.k] !== null ? datos[c.k] : (c.def !== undefined ? c.def : '');
+      if (v === 'HOY') v = vent ? vent.hoy : hoyLocal();
       const idc = 'f_' + c.k;
+      const nota = c.nota ? `<p class="text-xs text-slate-500 mt-1">${esc(c.nota)}</p>` : '';
       const lab = `<label for="${idc}" class="etiqueta">${esc(c.l)}${c.req ? ' *' : ''}</label>`;
-      if (c.t === 'sel') {
-        const ops = c.lookup ? (await lookup(c.lookup)).map(o => [o.id, o.nombre]) : c.op.map(o => [o, o]);
+      if (c.t === 'org') {
+        html += `<div>${lab}<input id="org_buscar" type="search" class="campo" list="org_lista" autocomplete="off" maxlength="100" value="${esc(datos.organizacion || '')}" placeholder="Buscar organización..."><datalist id="org_lista"></datalist><input type="hidden" id="${idc}" value="${esc(datos[c.k] || '')}">${nota}<p class="error-campo" id="e_${c.k}"></p></div>`;
+      } else if (c.t === 'fecha') {
+        const lim = vent && c.k === 'fecha_gestion' && !id ? ` min="${esc(vent.ventana.desde)}" max="${esc(vent.ventana.hasta)}"` : '';
+        html += `<div>${lab}<input id="${idc}" type="date" class="campo" value="${esc(String(v).slice(0, 10))}"${lim}>${vent && c.k === 'fecha_gestion' ? `<p class="text-xs text-slate-500 mt-1">Puedes ingresar desde el ${esc(dia(vent.ventana.desde))} (las semanas se cierran el ${['', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'][vent.periodo.cierre_dia_semana]} siguiente). Máximo ${vent.periodo.max_gestiones_dia} gestiones por día.</p>` : ''}<p class="error-campo" id="e_${c.k}"></p></div>`;
+      } else if (c.t === 'num') {
+        html += `<div>${lab}<input id="${idc}" type="number" step="${c.paso || '1'}" class="campo" value="${esc(v)}"><p class="error-campo" id="e_${c.k}"></p></div>`;
+      } else if (c.t === 'chk') {
+        html += `<div><label class="flex items-start gap-2 text-sm"><input id="${idc}" type="checkbox" class="mt-1" ${Number(v) ? 'checked' : ''}> <span>${esc(c.l)}</span></label></div>`;
+      } else if (c.t === 'sel') {
+        const ops = c.lookup === 'items-mios' ? vent.data.map(o => [o.id, o.nombre]) : c.lookup ? (await lookup(c.lookup)).map(o => [o.id, o.nombre]) : c.op.map(o => [o, o]);
         html += `<div>${lab}<select id="${idc}" class="campo"><option value="">Seleccione...</option>${ops.map(([val, txt]) => `<option value="${esc(val)}" ${String(val) === String(v) ? 'selected' : ''}>${esc(txt)}</option>`).join('')}</select><p class="error-campo" id="e_${c.k}"></p></div>`;
       } else if (c.t === 'area') {
-        html += `<div>${lab}<textarea id="${idc}" class="campo" rows="3" maxlength="${c.max}">${esc(v)}</textarea><p class="error-campo" id="e_${c.k}"></p></div>`;
+        html += `<div>${lab}<textarea id="${idc}" class="campo" rows="3" maxlength="${c.max}">${esc(v)}</textarea>${nota}<p class="error-campo" id="e_${c.k}"></p></div>`;
       } else if (c.t === 'multi') {
         const sel = new Set((datos.delegaciones || []).map(Number));
         html += `<fieldset><legend class="etiqueta">${esc(c.l)}</legend><div class="grid grid-cols-1 sm:grid-cols-2 gap-1">${delegacionesPermitidas().map(d => `<label class="flex items-center gap-2 text-sm"><input type="checkbox" class="chk-del" value="${d.id}" ${sel.has(d.id) ? 'checked' : ''}> ${esc(d.codigo)} · ${esc(d.nombre)}</label>`).join('')}</div><p class="text-xs text-slate-500 mt-1">Solo puedes autorizar delegaciones que tú tienes autorizadas.</p></fieldset>`;
@@ -331,7 +484,7 @@
       } else if (c.t === 'permisos') {
         html += `<div><span class="etiqueta">Permisos por módulo</span>${matrizPermisos(datos.permisos || {})}<p class="text-xs text-slate-500 mt-1">Solo puedes marcar permisos que tú tienes. Lo no marcado queda denegado.</p></div>`;
       } else {
-        html += `<div>${lab}<input id="${idc}" type="${c.tipo || 'text'}" class="campo" maxlength="${c.max || 150}" value="${esc(v)}" ${c.ph ? `placeholder="${esc(c.ph)}"` : ''}><p class="error-campo" id="e_${c.k}"></p></div>`;
+        html += `<div>${lab}<input id="${idc}" type="${c.tipo || 'text'}" class="campo" maxlength="${c.max || 150}" value="${esc(v)}" ${c.ph ? `placeholder="${esc(c.ph)}"` : ''}>${nota}<p class="error-campo" id="e_${c.k}"></p></div>`;
       }
     }
 
@@ -339,12 +492,21 @@
       title: id ? `Editar ${m.singular}` : `Nuevo registro: ${m.singular}`,
       html: `<form id="swal-form" class="text-left space-y-3" novalidate>${html}</form>`,
       width: 640, showCancelButton: true, confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar', confirmButtonColor: '#DB0032', focusConfirm: false,
+      didOpen: iniciarBuscadorOrg,
       preConfirm: async () => {
         const body = {}, errores = {};
         for (const c of m.campos) {
           if (c.t === 'multi') { body.delegaciones = [...document.querySelectorAll('.chk-del:checked')].map(i => Number(i.value)); continue; }
           if (c.t === 'permisos') { body.permisos = leerPermisos($('swal-form')); continue; }
-          const el = $('f_' + c.k); let val = el.value.trim();
+          if (c.t === 'org') { const ido = $('f_' + c.k).value; if (ido) body[c.k] = Number(ido); else if (id) body[c.k] = null; continue; }
+          const el = $('f_' + c.k);
+          if (c.t === 'chk') { body[c.k] = el.checked ? 1 : 0; continue; }
+          let val = el.value.trim();
+          if (c.t === 'num') {
+            if (val === '') { if (c.req) errores[c.k] = 'Este campo es obligatorio.'; continue; }
+            if (!Number.isFinite(Number(val))) { errores[c.k] = 'Ingresa un número válido.'; continue; }
+            body[c.k] = Number(val); continue;
+          }
           if (c.t === 'clave') { if (!val && id) continue; if (!val) { errores[c.k] = 'La contraseña es obligatoria.'; continue; } if (val.length < 8 || !/[A-Za-z]/.test(val) || !/\d/.test(val)) { errores[c.k] = 'Mínimo 8 caracteres, con al menos una letra y un número.'; continue; } body[c.k] = el.value; continue; }
           if (c.req && !val) { errores[c.k] = 'Este campo es obligatorio.'; continue; }
           if (c.tipo === 'email' && val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) { errores[c.k] = 'Ingresa un correo válido.'; continue; }
@@ -366,8 +528,39 @@
         return r.data;
       }
     });
-    if (res.isConfirmed) { toast('success', res.value.message || 'Guardado'); if (id === null) estadoLista.page = 1; cargarFilas(); }
+    if (res.isConfirmed) {
+      toast('success', res.value.message || 'Guardado');
+      if (id === null) estadoLista.page = 1;
+      recargar();
+      if (res.value.aviso) aviso('warning', `La gestión ${res.value.codigo || ''} se guardó, pero no puntúa`, res.value.aviso);
+      else if (res.value.tubo) toast('info', `Ingresada al tubo como ${res.value.tubo}`);
+    }
   }
+  // Buscador de organizaciones: consulta al servidor a medida que se escribe y completa solicitante y territorio.
+  function iniciarBuscadorOrg() {
+    const caja = $('org_buscar');
+    if (!caja) return;
+    let t, opciones = [];
+    caja.addEventListener('input', () => {
+      const elegida = opciones.find(o => o.nombre === caja.value);
+      if (elegida) {
+        $('f_id_organizacion').value = elegida.id;
+        if ($('f_solicitante')) $('f_solicitante').value = elegida.nombre;
+        if ($('f_territorio') && elegida.territorio) $('f_territorio').value = elegida.territorio;
+        return;
+      }
+      $('f_id_organizacion').value = '';
+      clearTimeout(t);
+      if (caja.value.trim().length < 2) return;
+      t = setTimeout(async () => {
+        const r = await api(`/lookup/organizaciones?q=${encodeURIComponent(caja.value.trim())}`);
+        if (!r.ok) return;
+        opciones = r.data.data;
+        $('org_lista').innerHTML = opciones.map(o => `<option value="${esc(o.nombre)}">${esc(o.territorio || '')}</option>`).join('');
+      }, 250);
+    });
+  }
+  const recargar = () => (actual === 'tubo' ? pantallaTubo() : (actual === 'cartas' && resumenCartas(), cargarFilas()));
 
   // ── Vista de consulta (Ver) ────────────────────────────────────────────────
   async function detalle(id) {
@@ -378,6 +571,9 @@
     const valor = (k, tipo) => {
       const v = d[k];
       if (tipo === 'fecha') return esc(fechaHora(v));
+      if (tipo === 'dia') return esc(dia(v));
+      if (tipo === 'si') return Number(v) ? 'Sí' : 'No';
+      if (tipo === 'pct') return esc(pct(v));
       if (tipo === 'permisos') {
         const p = v || {}, mods = Object.keys(p);
         return mods.length ? `<ul class="list-disc pl-5">${mods.map(x => `<li>${esc(config.modulos[x] || x)}: ${esc(p[x].join(', '))}</li>`).join('')}</ul>` : 'Sin permisos';
@@ -393,6 +589,140 @@
       html: `<dl class="text-left grid grid-cols-1 sm:grid-cols-3 gap-x-3 gap-y-2">${VER[modulo].map(([k, l, t]) => `<dt class="etiqueta sm:col-span-1 !mb-0">${esc(l)}</dt><dd class="sm:col-span-2 text-sm">${valor(k, t)}</dd>`).join('')}</dl>`,
       width: 640, confirmButtonText: 'Cerrar', confirmButtonColor: '#DB0032'
     });
+  }
+
+  // ── Matriz SGR: mi puntaje y semáforo ───────────────────────────────────────
+  const COLOR_SEM = { Verde: 'border-green-500', Naranjo: 'border-orange-400', Rojo: 'border-red-500' };
+  function tarjetaPuntaje(r) {
+    const total = r.total || 0, obj = (r.objetivo && r.objetivo.objetivo) || 0;
+    const ancho = Math.min(100, total * 100);
+    return `<div class="bg-white rounded-xl border-l-8 ${COLOR_SEM[r.semaforo] || 'border-slate-300'} shadow-sm border border-slate-200 p-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="sem sem-${esc(r.semaforo)}">${esc(r.semaforo)}</span>
+        <div><div class="text-3xl font-extrabold">${esc(pct(total))}</div><div class="text-xs text-slate-500">Puntaje del período (mínimo esperado ${esc(pct(r.periodo.minimo_cumplimiento))})</div></div>
+        <div class="ml-auto text-right text-sm"><div class="font-bold">Objetivo de hoy: ${esc(pct(obj))}</div>
+          <div class="text-xs text-slate-500">${r.objetivo.diasNetos} de ${r.objetivo.diasPeriodo} días${r.objetivo.diasAusencia ? ` (${r.objetivo.diasAusencia} de ausencia descontados)` : ''}</div></div>
+      </div>
+      <div class="barra mt-3" role="img" aria-label="Puntaje ${esc(pct(total))}, objetivo ${esc(pct(obj))}"><span style="width:${ancho}%"></span><i style="left:${Math.min(100, obj * 100)}%"></i></div>
+      <p class="text-xs text-slate-500 mt-1">La línea oscura marca el objetivo de hoy. Verde: llegas al objetivo. Naranjo: al menos 60 % de él. Rojo: menos.</p>
+    </div>`;
+  }
+  function tablaItems(r) {
+    const fila = i => `<tr><td>${esc(i.item)}${i.topado ? ' <span class="pastilla p-off" title="Tope por ítem aplicado">tope</span>' : ''}</td>
+      <td class="text-right">${i.calculo === 'emergencia' ? 'las que ocurran' : i.calculo === 'tubo' ? esc(pct(i.meta)) : esc(i.meta)}</td>
+      <td class="text-right">${i.calculo === 'tubo' ? esc(pct(i.avance)) : esc(i.avance)}</td>
+      <td class="text-right">${esc(pct(i.pctTopado))}</td><td class="text-right">${esc(pct(i.ponderador))}</td><td class="text-right font-bold">${esc(pct(i.ponderado))}</td></tr>`;
+    return `<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto mt-4"><table class="tabla w-full"><thead><tr><th>Ítem</th><th class="text-right">Meta</th><th class="text-right">Avance</th><th class="text-right">Cumplimiento</th><th class="text-right">Ponderador</th><th class="text-right">Puntaje</th></tr></thead><tbody>
+      ${r.items.map(fila).join('')}
+      <tr><td colspan="5" class="text-right">Felicitaciones (${r.felicitaciones.contadas} de ${r.felicitaciones.cantidad})</td><td class="text-right">+${esc(pct(r.felicitaciones.puntos))}</td></tr>
+      <tr><td colspan="5" class="text-right">Reclamos (${r.reclamos.cantidad})</td><td class="text-right">${esc(pct(r.reclamos.puntos))}</td></tr>
+      <tr><td colspan="5" class="text-right font-bold">Total${r.topadoTotal ? ' (con tope por colaborador)' : ''}</td><td class="text-right font-extrabold">${esc(pct(r.total))}</td></tr></tbody></table></div>
+      ${r.advertencias.map(a => `<p class="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-2"><i class="fa-solid fa-triangle-exclamation"></i> ${esc(a)}</p>`).join('')}`;
+  }
+
+  async function pantallaSemaforo() {
+    const cont = $('contenido');
+    cont.innerHTML = '<p class="text-slate-500"><i class="fa-solid fa-spinner fa-spin"></i> Calculando...</p>';
+    const r = await api('/semaforo');
+    if (actual !== 'semaforo') return;
+    if (!r.ok) { cont.innerHTML = `<p class="text-red-700"><i class="fa-solid fa-triangle-exclamation"></i> ${esc(r.data.message || 'No se pudo calcular.')}</p>`; return; }
+    const d = r.data;
+    const cab = `<h1 class="text-xl font-bold mb-4"><i class="fa-solid fa-traffic-light text-red-700"></i> Mi puntaje y semáforo</h1>`;
+    if (!d.periodo) { cont.innerHTML = cab + '<p class="bg-white rounded-xl border p-4">No hay un período activo para la fecha de hoy.</p>'; return; }
+    if (!d.tieneMetas) { cont.innerHTML = cab + `<p class="bg-white rounded-xl border p-4">Tu cargo no tiene metas cargadas en «${esc(d.periodo.nombre)}». La Coordinación puede cargarlas en «Metas por cargo».</p>`; return; }
+    const g = d.gestiones;
+    cont.innerHTML = `${cab}<p class="text-sm text-slate-600 mb-3">${esc(d.usuario.nombre)} · ${esc(d.usuario.rol)} · ${esc(d.periodo.nombre)} (${esc(dia(d.periodo.fecha_inicio))} al ${esc(dia(d.periodo.fecha_fin))})</p>
+      ${tarjetaPuntaje(d)}
+      ${d.periodo.exigir_verificacion ? '<p class="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-3"><i class="fa-solid fa-circle-info"></i> En este período solo cuentan las gestiones con imagen verificada por la jefatura.</p>' : ''}
+      <p class="text-sm mt-3">${g.total} gestión(es) registradas${g.ultima ? ` · última el ${esc(dia(g.ultima))}${g.diasSinIngreso > 2 ? ` (${g.diasSinIngreso} días sin ingresar)` : ''}` : ''}${d.tubo.total ? ` · tubo: ${d.tubo.realizadas} de ${d.tubo.total} realizadas` : ''}.</p>
+      ${tablaItems(d)}`;
+  }
+
+  // ── Matriz SGR: equipo de la delegación ─────────────────────────────────────
+  async function pantallaEquipo() {
+    const cont = $('contenido');
+    cont.innerHTML = '<p class="text-slate-500"><i class="fa-solid fa-spinner fa-spin"></i> Calculando...</p>';
+    const r = await api('/semaforo/equipo');
+    if (actual !== 'equipo') return;
+    const cab = `<div class="flex flex-wrap items-center gap-2 mb-4"><h1 class="text-xl font-bold mr-auto"><i class="fa-solid fa-people-group text-red-700"></i> Equipo de la delegación</h1>
+      ${puede('equipo', 'ver') ? '<button id="exp-equipo" class="btn btn-sec"><i class="fa-solid fa-file-excel text-green-700"></i> Exportar a Excel</button>' : ''}</div>`;
+    if (!r.ok) { cont.innerHTML = cab + `<p class="text-red-700"><i class="fa-solid fa-triangle-exclamation"></i> ${esc(r.data.message || 'No se pudo calcular.')}</p>`; return; }
+    const d = r.data;
+    if (!d.periodo) { cont.innerHTML = cab + '<p class="bg-white rounded-xl border p-4">No hay un período activo para la fecha de hoy.</p>'; return; }
+    window.__equipo = d.filas;
+    cont.innerHTML = `${cab}<p class="text-sm text-slate-600 mb-3">${esc(d.periodo.nombre)} · al ${esc(dia(d.hoy))}</p>
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto"><table class="tabla w-full"><thead><tr><th>Funcionario</th><th>Cargo</th><th class="text-right">Puntaje</th><th class="text-right">Objetivo</th><th>Semáforo</th><th class="text-right">Gestiones</th><th>Última</th><th></th></tr></thead><tbody>
+      ${d.filas.map((f, i) => f.tieneMetas
+        ? `<tr><td>${esc(f.usuario.nombre)}</td><td>${esc(f.usuario.rol)}</td><td class="text-right font-bold">${esc(pct(f.total))}</td><td class="text-right">${esc(pct(f.objetivo.objetivo))}</td><td><span class="sem sem-${esc(f.semaforo)}">${esc(f.semaforo)}</span></td><td class="text-right">${f.gestiones.total}</td><td>${esc(dia(f.gestiones.ultima))}</td><td><button class="btn btn-sec !py-1" data-det="${i}"><i class="fa-regular fa-eye"></i> Detalle</button></td></tr>`
+        : `<tr><td>${esc(f.usuario.nombre)}</td><td>${esc(f.usuario.rol)}</td><td colspan="6" class="text-slate-500">Sin metas en este período</td></tr>`).join('')}
+      </tbody></table></div>`;
+    cont.querySelectorAll('[data-det]').forEach(b => b.addEventListener('click', () => {
+      const f = window.__equipo[Number(b.dataset.det)];
+      Swal.fire({ title: esc(f.usuario.nombre), html: `<div class="text-left">${tarjetaPuntaje(f)}${tablaItems(f)}</div>`, width: 860, confirmButtonText: 'Cerrar', confirmButtonColor: '#DB0032' });
+    }));
+    if ($('exp-equipo')) $('exp-equipo').addEventListener('click', () => descargar('/semaforo/equipo/export', `equipo_${hoyLocal()}.xlsx`, $('exp-equipo')));
+  }
+  async function descargar(ruta, nombre, boton) {
+    if (boton) boton.disabled = true;
+    try {
+      const r = await fetch(API_URL + ruta, { headers: { Authorization: `Bearer ${Sesion.token()}`, 'X-Delegacion': Sesion.delegacion() || '' } });
+      if (!r.ok) { const d = await r.json().catch(() => ({})); aviso(r.status === 404 ? 'info' : 'error', r.status === 404 ? 'Sin datos' : 'No se pudo exportar', d.message || 'Error del servidor.'); return; }
+      const blob = await r.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = nombre;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+      toast('success', 'Archivo Excel generado');
+    } finally { if (boton) boton.disabled = false; }
+  }
+
+  // ── Matriz SGR: tubo de trabajo (tablero) ───────────────────────────────────
+  let soloMias = false;
+  const SIGUIENTE_TXT = { 'Pendiente': 'A pendiente', 'En proceso': 'A en proceso', 'Realizado': 'Marcar realizada' };
+  function tarjetaTubo(t) {
+    return `<article class="tarjeta ${t.estado === 'Realizado' ? 'hecha' : ''}">
+      <div class="flex justify-between gap-2"><span class="cod">${esc(t.codigo)}</span><span class="pastilla ${t.ambito === 'EXT' ? 'p-off' : 'p-ok'}">${t.ambito === 'EXT' ? 'Externo' : 'Interno'}</span></div>
+      <p class="titulo font-semibold mt-1">${esc(t.titulo)}</p>
+      <p class="meta mt-1">${t.codigo_gestion ? `Gestión ${esc(t.codigo_gestion)} · ` : ''}Solicita: ${esc(t.solicitante)}${t.territorio ? ` (${esc(t.territorio)})` : ''}</p>
+      ${t.area_apoyo ? `<p class="meta">Apoyo: ${esc(t.area_apoyo)}</p>` : ''}
+      <p class="meta">Responsable: ${esc(t.responsable)}</p>
+      <p class="meta">Ingresó ${esc(dia(t.fecha_solicitud))}${t.fecha_compromiso ? ` · compromiso ${esc(dia(t.fecha_compromiso))}` : ''}${t.fecha_realizado ? ` · realizada ${esc(dia(t.fecha_realizado))}` : ''}</p>
+      ${t.avance ? `<p class="meta italic">${esc(t.avance)}</p>` : ''}
+      <div class="flex flex-wrap gap-1 mt-2">
+        ${t.puedeAvanzar ? `<button class="btn btn-primario !py-1 !text-xs" data-avanzar="${t.id}" data-sig="${esc(t.siguiente)}">${esc(SIGUIENTE_TXT[t.siguiente])}</button>` : ''}
+        ${puede('tubo', 'editar') && t.estado !== 'Realizado' ? `<button class="btn btn-sec !py-1 !text-xs" data-editar-tubo="${t.id}"><i class="fa-solid fa-pen"></i> Editar</button>` : ''}
+        <button class="btn btn-sec !py-1 !text-xs" data-ver-tubo="${t.id}"><i class="fa-regular fa-eye"></i> Ver</button>
+      </div></article>`;
+  }
+  async function pantallaTubo() {
+    const cont = $('contenido');
+    if (!$('tablero-tubo')) cont.innerHTML = '<p class="text-slate-500"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tablero...</p>';
+    const r = await api(`/tubo/tablero${soloMias ? '?mias=1' : ''}`);
+    if (actual !== 'tubo') return;
+    if (!r.ok) { cont.innerHTML = `<p class="text-red-700"><i class="fa-solid fa-triangle-exclamation"></i> ${esc(r.data.message || 'No se pudo cargar el tubo.')}</p>`; return; }
+    const k = r.data.indicadores, col = r.data.columnas;
+    const kpi = (n, txt, color, sub) => `<div class="kpi" style="border-left-color:${color}"><b>${n}</b><small>${txt}</small>${sub ? `<div class="text-xs text-slate-500">${sub}</div>` : ''}</div>`;
+    cont.innerHTML = `<div class="flex flex-wrap items-center gap-2 mb-4">
+        <h1 class="text-xl font-bold mr-auto"><i class="fa-solid fa-diagram-project text-red-700"></i> Tubo de trabajo</h1>
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="solo-mias" ${soloMias ? 'checked' : ''}> Solo mis gestiones</label>
+        ${puede('tubo', 'exportar') ? '<button id="exp-tubo" class="btn btn-sec"><i class="fa-solid fa-file-excel text-green-700"></i> Exportar a Excel</button>' : ''}
+        ${puede('tubo', 'crear') ? '<button id="nuevo-tubo" class="btn btn-primario"><i class="fa-solid fa-plus"></i> Nueva gestión</button>' : ''}</div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        ${kpi(k.total, 'Gestiones en tubo', '#475569', `${k.ingresadas} recién ingresada(s)`)}
+        ${kpi(k.realizadas, 'Realizadas', '#16a34a', `${String(k.tasaResolucion).replace('.', ',')} % de resolución`)}
+        ${kpi(k.enProceso, 'En proceso', '#2563eb', 'trabajo activo')}
+        ${kpi(k.pendientes, 'Pendientes', '#f59e0b', 'requieren atención')}
+      </div>
+      <div class="tablero" id="tablero-tubo">${['Ingresado', 'Pendiente', 'En proceso', 'Realizado'].map(e => `<section class="columna" aria-label="${e}"><h2><span>${e}</span><span>${col[e].length}</span></h2>${col[e].length ? col[e].map(tarjetaTubo).join('') : '<p class="text-xs text-slate-500">Sin gestiones.</p>'}</section>`).join('')}</div>`;
+    $('solo-mias').addEventListener('change', e => { soloMias = e.target.checked; pantallaTubo(); });
+    if ($('nuevo-tubo')) $('nuevo-tubo').addEventListener('click', () => formulario(null));
+    if ($('exp-tubo')) $('exp-tubo').addEventListener('click', () => descargar('/tubo/export', `tubo_${hoyLocal()}.xlsx`, $('exp-tubo')));
+    cont.querySelectorAll('[data-editar-tubo]').forEach(b => b.addEventListener('click', () => formulario(b.dataset.editarTubo)));
+    cont.querySelectorAll('[data-ver-tubo]').forEach(b => b.addEventListener('click', () => detalle(b.dataset.verTubo)));
+    cont.querySelectorAll('[data-avanzar]').forEach(b => b.addEventListener('click', async () => {
+      b.disabled = true;
+      const x = await api(`/tubo/${b.dataset.avanzar}/estado`, { method: 'PUT', body: { estado: b.dataset.sig } });
+      if (x.ok) { toast('success', x.data.message); pantallaTubo(); } else { aviso('error', 'No se pudo cambiar el estado', x.data.message); b.disabled = false; }
+    }));
   }
 
   // ── Inicio: contexto del usuario y matriz de permisos de su rol ─────────────

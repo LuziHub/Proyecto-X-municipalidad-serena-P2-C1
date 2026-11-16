@@ -7,6 +7,8 @@ const { authRequired, requirePermiso } = require('../middleware/auth');
 const { MODULOS_API } = require('../config/modulos');
 const { MODULOS, MODULOS_PLANTILLA, ACCIONES, ALCANCES, normalizarPermisos, esSubconjunto, claveAlcance } = require('../config/permisos');
 const { alcance } = require('../utils/delegaciones');
+const { aFechaTexto } = require('../utils/fechas');
+const reglasMatriz = require('../services/reglas-modulos');
 const { validarCampos } = require('../utils/validar');
 const { crearXlsx } = require('../utils/xlsx');
 const clave = require('../utils/clave');
@@ -19,6 +21,8 @@ modulosValidos.forEach(m => {
 // Columnas que nunca salen del servidor.
 const COLUMNAS_PRIVADAS = /(pass|clave|contrase|token|secret|hash)/i;
 const limpiar = fila => Object.fromEntries(Object.entries(fila).filter(([k]) => !COLUMNAS_PRIVADAS.test(k)));
+// Columnas DATE: se envían como AAAA-MM-DD (un Date en JSON cambiaría de día según la zona horaria).
+const COLUMNAS_FECHA = new Set(['fecha_gestion', 'fecha_solicitud', 'fecha_compromiso', 'fecha_realizado', 'fecha_desde', 'fecha_hasta', 'fecha_inicio', 'fecha_fin', 'fecha', 'fecha_verificacion', 'fecha_actividad', 'fecha_constitucion', 'fecha_inscripcion']);
 
 const error = (status, message) => ({ status, message });
 const responderError = (res, e) => res.status(e.status).json({ status: 'error', message: e.message, ...(e.extra || {}) });
@@ -54,6 +58,7 @@ function construirFiltro(modulo, req, conFiltros) {
 
 function postProceso(modulo, fila) {
   const f = limpiar(fila);
+  for (const k of Object.keys(f)) if (COLUMNAS_FECHA.has(k)) f[k] = aFechaTexto(f[k]);
   if (modulo === 'roles') f.permisos = normalizarPermisos(f.permisos);
   return f;
 }
@@ -213,6 +218,8 @@ const reglas = {
   }
 };
 
+Object.assign(reglas, reglasMatriz.reglas);
+
 // ─── Rutas auxiliares para los formularios ───────────────────────────────────
 router.get('/lookup/config', authRequired, (req, res) => {
   res.json({ status: 'success', modulos: MODULOS, plantillas: Object.keys(MODULOS_PLANTILLA), acciones: ACCIONES, alcances: ALCANCES });
@@ -336,8 +343,8 @@ modulosValidos.forEach(modulo => {
   router.post(`/${modulo}`, authRequired, requirePermiso(modulo, 'crear'), async (req, res) => {
     try {
       const body = req.body && typeof req.body === 'object' ? req.body : {};
-      if (modulo === 'atenciones') {
-        const sc = alcance('atenciones', req.auth);
+      if (['atenciones', 'gestiones', 'tubo', 'valoraciones', 'ausencias', 'cartas'].includes(modulo)) {
+        const sc = alcance(modulo, req.auth);
         if (sc.error) return responderError(res, sc.error);
       }
       const { valores, errores } = validarCampos(cfg.campos, body);
@@ -396,8 +403,8 @@ modulosValidos.forEach(modulo => {
           [...columnas.map(c => datos[c]), id]
         );
       }
-      if (regla.despues) await regla.despues(id);
-      res.json({ status: 'success', message: 'Registro actualizado con éxito.' });
+      const extra = regla.despues ? await regla.despues(id) : null;
+      res.json({ status: 'success', message: 'Registro actualizado con éxito.', ...(extra || {}) });
     } catch (err) {
       manejarErrorBd(err, res, 'Error al actualizar el registro.');
     }
@@ -412,6 +419,10 @@ modulosValidos.forEach(modulo => {
       if (r.error) return responderError(res, r.error);
       if (!r.fila) return res.status(404).json({ status: 'error', message: 'Registro no encontrado.' });
 
+      if (reglasMatriz.eliminar[modulo]) {
+        const e = await reglasMatriz.eliminar[modulo](req, r.fila);
+        if (e) return responderError(res, e);
+      }
       if (modulo === 'usuarios' && id === req.auth.usuario.id) {
         return res.status(403).json({ status: 'error', message: 'No puedes eliminar tu propia cuenta.' });
       }

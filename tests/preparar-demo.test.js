@@ -24,7 +24,7 @@ test('preparar-demo: aplica permisos, delegaciones de administradores y claves; 
   const c = await nuevo(); ensuciar(c);
   await main({ aplicar: true, forzar: false, claveDemo: 'Demo2026x' }, silencio);
   const s = c.db.sqlite;
-  assert.deepEqual(Object.keys(JSON.parse(s.prepare('SELECT permisos FROM roles WHERE id_rol = 1').get().permisos)).length, 12);
+  assert.deepEqual(Object.keys(JSON.parse(s.prepare('SELECT permisos FROM roles WHERE id_rol = 1').get().permisos)).length, 22);
   assert.deepEqual(JSON.parse(s.prepare('SELECT permisos FROM roles WHERE id_rol = 2').get().permisos), { atenciones: ['ver', 'crear'] });
   // el administrador queda con las 3 delegaciones activas (la inactiva DEL03 no)
   assert.deepEqual(s.prepare('SELECT id_delegacion d FROM usuario_delegaciones WHERE id_usuario = 1 ORDER BY 1').all().map(x => x.d), [1, 2, 4]);
